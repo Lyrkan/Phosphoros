@@ -1,0 +1,26 @@
+@import "~bootswatch/dist/flatly/variables";
+
+$enable-cssgrid: true;
+$web-font-path: false;
+
+@import '~bootstrap/scss/bootstrap';
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+@import "~bootswatch/dist/flatly/bootswatch";
+
+$body-padding-top: 100px;
+
+html, body {
+  height: 100%;
+}
+
+html {
+  scrollbar-width: none;
+}
+
+body {
+  padding-top: $body-padding-top;
+}
+
+.sticky-top {
+  top: $body-padding-top;
+}
