@@ -4,19 +4,14 @@
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
+    "build:x64": "electron-forge package --arch=x64 && electron-builder build --publish=never --x64 --linux snap --prepackaged=out/k40-control-panel-display-linux-x64",
+    "build:arm64": "electron-forge package --arch=arm64 && electron-builder build --publish=never --arm64 --linux snap --prepackaged=out/k40-control-panel-display-linux-arm64",
     "lint": "eslint --ext .ts,.tsx .",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-deb": "^7.5.0",
-    "@electron-forge/maker-rpm": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
     "@electron-forge/plugin-fuses": "^7.5.0",
     "@electron-forge/plugin-webpack": "^7.5.0",
@@ -31,6 +26,7 @@
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "css-loader": "^6.11.0",
     "electron": "33.0.1",
+    "electron-builder": "^25.1.8",
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
@@ -62,5 +58,14 @@
     "react-dom": "^18.3.1",
     "react-router": "^6.27.0",
     "react-router-bootstrap": "^0.26.3"
+  },
+  "build": {
+    "appId": "net.adrastee.k40-control-panel-display",
+    "linux": {
+      "category": "Development",
+      "target": [
+        "snap"
+      ]
+    }
   }
 }

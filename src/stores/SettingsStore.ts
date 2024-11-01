@@ -37,12 +37,11 @@ export class SettingsStore {
     }
 
     this.updateTimeout = setTimeout(async () => {
-      if (!this.serialService) {
-        console.warn('Serial service not initialized');
-        return;
-      }
-
       try {
+        if (!this.serialService) {
+          throw new Error('Serial service not initialized');
+        }
+
         await this.serialService.sendMessage({
           a: OutgoingMessageType.SettingsSet,
           p: settings
