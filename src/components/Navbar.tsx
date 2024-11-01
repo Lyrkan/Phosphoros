@@ -12,7 +12,7 @@ export default function Navbar() {
         <Nav className="me-auto gap-3">
           <LinkContainer to="/"><Nav.Link><i className="bi bi-display"></i> Status</Nav.Link></LinkContainer>
           <LinkContainer to="/controls"><Nav.Link><i className="bi bi-dpad"></i> Controls</Nav.Link></LinkContainer>
-          <LinkContainer to="/settings"><Nav.Link><i className="bi bi-gear"/> Settings</Nav.Link></LinkContainer>
+          <LinkContainer to="/settings/grbl"><Nav.Link><i className="bi bi-gear"/> Settings</Nav.Link></LinkContainer>
           <LinkContainer to="/debug"><Nav.Link><i className="bi bi-chevron-right"/> Debug</Nav.Link></LinkContainer>
         </Nav>
       </Container>

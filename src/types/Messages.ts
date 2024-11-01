@@ -1,11 +1,18 @@
 import { ControllerSettings } from "./Settings";
 
-export enum MessageType {
+export enum IncomingMessageType {
   StatusReport = 0,
   GrblReport = 1,
   GrblMessage = 2,
   GrblAck = 3,
   ControllerSettings = 4,
+}
+
+export enum OutgoingMessageType {
+  GrblAction = 0,
+  SettingsSet = 1,
+  SettingsGet = 2,
+  StatusGet = 3,
 }
 
 export interface StatusReportPayload {
@@ -69,9 +76,34 @@ export interface GrblAckPayload {
   success: boolean;
 }
 
-export type SerialMessage =
-  | { t: MessageType.StatusReport; p: StatusReportPayload }
-  | { t: MessageType.GrblReport; p: GrblReportPayload }
-  | { t: MessageType.GrblMessage; p: GrblMessagePayload }
-  | { t: MessageType.GrblAck; p: GrblAckPayload }
-  | { t: MessageType.ControllerSettings; p: ControllerSettings };
+export type SettingsPayload = ControllerSettings
+
+export interface GrblActionPayload {
+  message: string;
+  id?: number;
+}
+
+export type CommandPayloadMap = {
+  [OutgoingMessageType.GrblAction]: GrblActionPayload;
+  [OutgoingMessageType.SettingsSet]: Partial<ControllerSettings>;
+  [OutgoingMessageType.SettingsGet]: Record<string, never>;
+  [OutgoingMessageType.StatusGet]: Record<string, never>;
+}
+
+
+export type IncomingMessage =
+  | { t: IncomingMessageType.StatusReport; p: StatusReportPayload }
+  | { t: IncomingMessageType.GrblReport; p: GrblReportPayload }
+  | { t: IncomingMessageType.GrblMessage; p: GrblMessagePayload }
+  | { t: IncomingMessageType.GrblAck; p: GrblAckPayload }
+  | { t: IncomingMessageType.ControllerSettings; p: ControllerSettings };
+
+
+export interface OutgoingMessageBase<T extends OutgoingMessageType, P> {
+  a: T;
+  p: P;
+}
+
+export type OutgoingMessage = {
+  [K in OutgoingMessageType]: OutgoingMessageBase<K, CommandPayloadMap[K]>
+}[OutgoingMessageType];

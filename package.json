@@ -1,5 +1,5 @@
 {
-  "name": "K40-Control-Panel Display",
+  "name": "k40-control-panel-display",
   "version": "1.0.0",
   "main": ".webpack/main",
   "scripts": {
@@ -7,7 +7,9 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx ."
+    "lint": "eslint --ext .ts,.tsx .",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.5.0",
@@ -19,6 +21,7 @@
     "@electron-forge/plugin-fuses": "^7.5.0",
     "@electron-forge/plugin-webpack": "^7.5.0",
     "@electron/fuses": "^1.8.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/react-router-bootstrap": "^0.26.6",
@@ -31,10 +34,12 @@
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.31.0",
     "fork-ts-checker-webpack-plugin": "^7.3.0",
+    "jest": "^29.7.0",
     "node-loader": "^2.0.0",
     "sass": "^1.80.1",
     "sass-loader": "^16.0.2",
     "style-loader": "^3.3.4",
+    "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "~4.5.4"

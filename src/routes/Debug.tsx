@@ -1,11 +1,14 @@
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { FormEvent, useState, useEffect, useRef } from "react";
-import { UartStatus, useStore } from "../stores/RootStore";
+import { useStore } from "../stores/RootStore";
+import { UartStatus } from "../types/Stores";
 import CardHeader from "../components/CardHeader";
+import { useSerialService } from '../contexts/SerialServiceContext';
 
 export default observer(function Debug() {
-  const { serialStore, serialService } = useStore();
+  const { serialStore } = useStore();
+  const serialService = useSerialService();
   const [message, setMessage] = useState("");
   const [autoScroll, setAutoScroll] = useState(true);
   const scrollContainerRef = useRef<HTMLPreElement>(null);

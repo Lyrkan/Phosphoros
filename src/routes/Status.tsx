@@ -2,7 +2,7 @@ import { Card, ProgressBar, Row, Col, Badge } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../stores/RootStore";
 import CardHeader from "../components/CardHeader";
-import { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus } from "../stores/RootStore";
+import { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus } from "../types/Stores";
 
 const Status = observer(() => {
   const { laserStore, lidsStore, coolingStore, systemStore, serialStore, settingsStore } = useStore();

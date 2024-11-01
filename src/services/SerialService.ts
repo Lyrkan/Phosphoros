@@ -1,8 +1,10 @@
-import { UartStatus } from '../stores/RootStore';
+import { UartStatus } from '../types/Stores';
 import { SerialStore } from '../stores/SerialStore';
 import { MessageHandlerService } from './MessageHandlerService';
+import { ISerialService } from './interfaces/ISerialService';
+import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap } from '../types/Messages';
 
-export class SerialService {
+export class SerialService implements ISerialService {
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
   private decoder = new TextDecoder();
@@ -10,6 +12,7 @@ export class SerialService {
   private readBuffer = '';
   private retryTimeout: NodeJS.Timeout | null = null;
   private readonly RETRY_INTERVAL = 10000; // 10 seconds
+  private nextGrblCommandId = 1;
 
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
     // Start connection attempt immediately
@@ -39,7 +42,7 @@ export class SerialService {
   async connect() {
     try {
       // Try to get any previously authorized ports
-      const ports = await navigator.serial.getPorts();
+      const ports = await navigator.serial.getPorts() || [];
       let port: SerialPort;
 
       if (ports.length > 0) {
@@ -61,7 +64,6 @@ export class SerialService {
           throw new Error('No compatible serial port found');
         }
       }
-
       await port.open({ baudRate: 115200 });
 
       this.store.setPort(port);
@@ -157,5 +159,44 @@ export class SerialService {
         break;
       }
     }
+  }
+
+  async sendCommand<T extends OutgoingMessageType>(
+    action: T,
+    payload?: CommandPayloadMap[T]
+  ): Promise<void> {
+    let message: OutgoingMessage;
+
+    switch (action) {
+      case OutgoingMessageType.GrblAction:
+        message = {
+          a: action,
+          p: {
+            message: (payload as GrblActionPayload).message,
+            id: this.nextGrblCommandId++
+          }
+        };
+        break;
+
+      case OutgoingMessageType.SettingsSet:
+        message = {
+          a: action,
+          p: payload as SettingsPayload
+        };
+        break;
+
+      case OutgoingMessageType.SettingsGet:
+      case OutgoingMessageType.StatusGet:
+        message = {
+          a: action,
+          p: {}
+        };
+        break;
+
+      default:
+        throw new Error(`Unknown action type: ${action}`);
+    }
+
+    await this.sendMessage(message);
   }
 }

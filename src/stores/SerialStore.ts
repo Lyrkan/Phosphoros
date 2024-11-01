@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { UartStatus } from "./RootStore";
+import { UartStatus } from "../types/Stores";
 
 interface SerialMessage {
   timestamp: number;
@@ -11,7 +11,7 @@ export class SerialStore {
   error: string | null = null;
   port: SerialPort | null = null;
   messages: SerialMessage[] = [];
-  lastMessageTime: number = 0;
+  lastMessageTime = 0;
 
   constructor() {
     makeAutoObservable(this);

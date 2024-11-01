@@ -1,4 +1,4 @@
-import { Card, Form } from "react-bootstrap";
+import { Alert, Card, Form } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import CardHeader from "../../components/CardHeader";
 import { useSettings } from "../../hooks/useSettings";
@@ -11,6 +11,10 @@ export default observer(function NetworkSettings() {
       <CardHeader icon="bi-wifi" title="Network options" />
       <Card.Body>
         <Card.Text as="div">
+          <Alert variant="info" className="small">
+            <i className="bi bi-info-circle me-2"></i>
+            Please note that all of these settings apply to the K40 Control Panel board, not the panel itself.
+          </Alert>
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>OTA Login</Form.Label>

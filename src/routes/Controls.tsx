@@ -4,9 +4,12 @@ import { useState } from "react";
 import CardHeader from "../components/CardHeader";
 import AxisControl from "../components/AxisControl";
 import { useStore } from "../stores/RootStore";
+import { useSerialService } from '../contexts/SerialServiceContext';
+import { OutgoingMessageType } from "../types/Messages";
 
 const Controls = observer(() => {
-  const { laserStore } = useStore();
+  const { laserStore, settingsStore, toastStore } = useStore();
+  const serialService = useSerialService();
   const [showMachinePosition, setShowMachinePosition] = useState(false);
 
   const gridStyle = {
@@ -14,6 +17,51 @@ const Controls = observer(() => {
   };
 
   const currentPosition = showMachinePosition ? laserStore.machinePosition : laserStore.workPosition;
+
+  const handleAxisMove = async (axis: 'X' | 'Y' | 'Z', increment: number) => {
+    const jogSpeed = (settingsStore.grbl.jog_speed ?? 100) * 60; // Default to 100mm/s if not set
+    const command = `$J=G21 G91 F${jogSpeed} ${axis}${increment}`;
+
+    try {
+      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
+        message: command
+      });
+    } catch (error) {
+      toastStore.show(
+        'Jog command failed',
+        `Failed to send the jog command to the controller: ${error.message}`,
+        'danger'
+      );
+    }
+  };
+
+  const handleAxisHome = async (axis: 'X' | 'Y' | 'Z' | 'XY') => {
+    try {
+      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
+        message: `$H${axis}`
+      });
+    } catch (error) {
+      toastStore.show(
+        'Homing failed',
+        `Failed to home ${axis}: ${error.message}`,
+        'danger'
+      );
+    }
+  };
+
+  const handleDisableSteppers = async () => {
+    try {
+      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
+        message: '$MD'
+      });
+    } catch (error) {
+      toastStore.show(
+        'Disable steppers failed',
+        `Failed to disable steppers: ${error.message}`,
+        'danger'
+      );
+    }
+  };
 
   return (
     <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
@@ -29,10 +77,18 @@ const Controls = observer(() => {
               {' '}mm/s
             </Col>
             <Col>
-              <Button variant="primary" className="me-2">
+              <Button
+                variant="primary"
+                className="me-2"
+                onClick={() => handleAxisHome('XY')}
+              >
                 <i className="bi bi-house-door"></i> Home X/Y
               </Button>
-              <Button variant="primary" className="me-4">
+              <Button
+                variant="primary"
+                className="me-4"
+                onClick={handleDisableSteppers}
+              >
                 <i className="bi bi-lock"></i> Disable Steppers
               </Button>
               <Form.Check
@@ -48,20 +104,20 @@ const Controls = observer(() => {
           <AxisControl
             axis="X"
             position={currentPosition.x}
-            onMove={(increment) => console.log(`X-axis: Moving ${increment}mm`)}
-            onHome={() => console.log('X-axis: Homing')}
+            onMove={(increment) => handleAxisMove('X', increment)}
+            onHome={() => handleAxisHome('X')}
           />
           <AxisControl
             axis="Y"
             position={currentPosition.y}
-            onMove={(increment) => console.log(`Y-axis: Moving ${increment}mm`)}
-            onHome={() => console.log('Y-axis: Homing')}
+            onMove={(increment) => handleAxisMove('Y', increment)}
+            onHome={() => handleAxisHome('Y')}
           />
           <AxisControl
             axis="Z"
             position={currentPosition.z}
-            onMove={(increment) => console.log(`Z-axis: Moving ${increment}mm`)}
-            onHome={() => console.log('Z-axis: Homing')}
+            onMove={(increment) => handleAxisMove('Z', increment)}
+            onHome={() => handleAxisHome('Z')}
             increments={[0.05, 0.1, 1, 10]}
           />
         </Card.Body>

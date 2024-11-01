@@ -8,7 +8,7 @@ export default observer(function GrblSettings() {
 
   return (
     <Card className="border-primary">
-      <CardHeader icon="bi-cpu" title="Grbl options" />
+      <CardHeader icon="bi-cpu" title="Grbl/FluidNC options" />
       <Card.Body>
         <Card.Text as="div">
           <Form>

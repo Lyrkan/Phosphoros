@@ -1,26 +1,27 @@
-import { MessageType, SerialMessage, StatusReportPayload, GrblReportPayload, GrblMessagePayload, GrblAckPayload } from '../types/Messages';
+import { IncomingMessageType, IncomingMessage, StatusReportPayload, GrblReportPayload, GrblMessagePayload, GrblAckPayload } from '../types/Messages';
 import { ControllerSettings } from '../types/Settings';
-import { LaserState, LidState, FlameSensorStatus, UartStatus, RootStore } from '../stores/RootStore';
-import { PositionType } from '../types/Stores';
+import { RootStore } from '../stores/RootStore';
+import { LaserState, LidState, FlameSensorStatus, UartStatus , PositionType } from '../types/Stores';
+import { IMessageHandlerService } from './interfaces/IMessageHandlerService';
 
-export class MessageHandlerService {
+export class MessageHandlerService implements IMessageHandlerService {
   constructor(private store: RootStore) {}
 
-  handleMessage(message: SerialMessage): void {
+  handleMessage(message: IncomingMessage): void {
     switch (message.t) {
-      case MessageType.StatusReport:
+      case IncomingMessageType.StatusReport:
         this.handleStatusReport(message.p as StatusReportPayload);
         break;
-      case MessageType.GrblReport:
+      case IncomingMessageType.GrblReport:
         this.handleGrblReport(message.p as GrblReportPayload);
         break;
-      case MessageType.GrblMessage:
+      case IncomingMessageType.GrblMessage:
         this.handleGrblMessage(message.p as GrblMessagePayload);
         break;
-      case MessageType.GrblAck:
+      case IncomingMessageType.GrblAck:
         this.handleGrblAck(message.p as GrblAckPayload);
         break;
-      case MessageType.ControllerSettings:
+      case IncomingMessageType.ControllerSettings:
         this.handleControllerSettings(message.p as ControllerSettings);
         break;
     }

@@ -1,20 +1,19 @@
 import { makeAutoObservable } from "mobx";
-import { LaserState, AlarmState, PositionType } from "../types/Stores";
-import { Position } from "../types/Stores";
+import { LaserState, AlarmState, PositionType , Position } from "../types/Stores";
 
 export class LaserStore {
   currentState: LaserState = LaserState.Unknown;
   alarmState: AlarmState = AlarmState.Unknown;
-  speed: number = 0;
+  speed = 0;
 
   workPosition: Position = { x: 0, y: 0, z: 0 };
   machinePosition: Position = { x: 0, y: 0, z: 0 };
   workOffset: Position = { x: 0, y: 0, z: 0 };
 
-  interlock: boolean = false;
-  lights: boolean = false;
-  airAssist: boolean = false;
-  beamPreview: boolean = false;
+  interlock = false;
+  lights = false;
+  airAssist = false;
+  beamPreview = false;
 
   constructor() {
     makeAutoObservable(this);

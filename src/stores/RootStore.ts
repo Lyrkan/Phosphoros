@@ -1,15 +1,11 @@
-import { makeAutoObservable } from "mobx";
 import { createContext, useContext } from "react";
 import { SerialStore } from './SerialStore';
-import { SerialService } from '../services/SerialService';
-import { MessageHandlerService } from "../services/MessageHandlerService";
-import { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus } from "../types/Stores";
 import { SettingsStore } from "./SettingsStore";
 import { LaserStore } from "./LaserStore";
 import { LidsStore } from "./LidsStore";
 import { CoolingStore } from "./CoolingStore";
 import { SystemStore } from "./SystemStore";
-
+import { ToastStore } from "./ToastStore";
 export class RootStore {
   laserStore: LaserStore;
   lidsStore: LidsStore;
@@ -17,8 +13,7 @@ export class RootStore {
   systemStore: SystemStore;
   serialStore: SerialStore;
   settingsStore: SettingsStore;
-  messageHandler: MessageHandlerService;
-  serialService: SerialService;
+  toastStore: ToastStore;
 
   constructor() {
     this.laserStore = new LaserStore();
@@ -26,9 +21,8 @@ export class RootStore {
     this.coolingStore = new CoolingStore();
     this.systemStore = new SystemStore();
     this.serialStore = new SerialStore();
-    this.settingsStore = new SettingsStore();
-    this.messageHandler = new MessageHandlerService(this);
-    this.serialService = new SerialService(this.serialStore, this.messageHandler);
+    this.toastStore = new ToastStore();
+    this.settingsStore = new SettingsStore(this.toastStore);
   }
 }
 
@@ -43,7 +37,3 @@ export function useStore(): RootStore {
   }
   return store;
 }
-
-export const rootStore = new RootStore();
-
-export { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus };
