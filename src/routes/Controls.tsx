@@ -17,6 +17,10 @@ const Controls = observer(() => {
 
   const currentPosition = showMachinePosition ? laserStore.machinePosition : laserStore.workPosition;
 
+  const isControlDisabled = () => {
+    return hasPendingCommands || laserStore.currentState !== 'Idle';
+  };
+
   const handleAxisMove = async (axis: 'X' | 'Y' | 'Z', increment: number) => {
     const jogSpeed = (settingsStore.grbl.jog_speed ?? 100) * 60; // Default to 100mm/s if not set
     const command = `$J=G21 G91 F${jogSpeed} ${axis}${increment}`;
@@ -49,7 +53,7 @@ const Controls = observer(() => {
                 variant="primary"
                 className="me-2"
                 onClick={() => handleAxisHome('XY')}
-                disabled={hasPendingCommands}
+                disabled={isControlDisabled()}
               >
                 <i className="bi bi-house-door"></i> Home X/Y
               </Button>
@@ -57,7 +61,7 @@ const Controls = observer(() => {
                 variant="primary"
                 className="me-4"
                 onClick={handleDisableSteppers}
-                disabled={hasPendingCommands}
+                disabled={isControlDisabled()}
               >
                 <i className="bi bi-lock"></i> Disable Steppers
               </Button>
@@ -76,14 +80,14 @@ const Controls = observer(() => {
             position={currentPosition.x}
             onMove={(increment) => handleAxisMove('X', increment)}
             onHome={() => handleAxisHome('X')}
-            disabled={hasPendingCommands}
+            disabled={isControlDisabled()}
           />
           <AxisControl
             axis="Y"
             position={currentPosition.y}
             onMove={(increment) => handleAxisMove('Y', increment)}
             onHome={() => handleAxisHome('Y')}
-            disabled={hasPendingCommands}
+            disabled={isControlDisabled()}
           />
           <AxisControl
             axis="Z"
@@ -91,7 +95,7 @@ const Controls = observer(() => {
             onMove={(increment) => handleAxisMove('Z', increment)}
             onHome={() => handleAxisHome('Z')}
             increments={[0.05, 0.1, 1, 10]}
-            disabled={hasPendingCommands}
+            disabled={isControlDisabled()}
           />
         </Card.Body>
       </Card>
