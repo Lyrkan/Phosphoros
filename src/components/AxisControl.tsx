@@ -6,6 +6,7 @@ interface AxisControlProps {
   onMove: (increment: number) => void;
   onHome: () => void;
   increments?: number[];
+  disabled?: boolean;
 }
 
 export default function AxisControl({
@@ -13,7 +14,8 @@ export default function AxisControl({
   position,
   onMove,
   onHome,
-  increments = [0.1, 1, 10, 100]
+  increments = [0.1, 1, 10, 100],
+  disabled = false
 }: AxisControlProps) {
   // Generate negative increments by mapping the positive ones
   const negativeIncrements = [...increments].reverse().map(n => -n);
@@ -36,11 +38,17 @@ export default function AxisControl({
               variant="primary"
               onClick={() => onMove(increment)}
               style={{ width: '4.5rem' }}
+              disabled={disabled}
             >
               {increment}
             </Button>
           ))}
-          <Button variant="primary" size="sm" onClick={onHome}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onHome}
+            disabled={disabled}
+          >
             <i className="bi bi-house-door"></i> Home
           </Button>
           {positiveIncrements.map((increment) => (
@@ -49,6 +57,7 @@ export default function AxisControl({
               variant="primary"
               onClick={() => onMove(increment)}
               style={{ width: '4.5rem' }}
+              disabled={disabled}
             >
               +{increment}
             </Button>

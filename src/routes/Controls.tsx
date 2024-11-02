@@ -4,12 +4,11 @@ import { useState } from "react";
 import CardHeader from "../components/CardHeader";
 import AxisControl from "../components/AxisControl";
 import { useStore } from "../stores/RootStore";
-import { useSerialService } from '../contexts/SerialServiceContext';
-import { OutgoingMessageType } from "../types/Messages";
+import { useCommandTracking } from '../hooks/useCommandTracking';
 
 const Controls = observer(() => {
-  const { laserStore, settingsStore, toastStore } = useStore();
-  const serialService = useSerialService();
+  const { laserStore, settingsStore } = useStore();
+  const { sendCommand, hasPendingCommands } = useCommandTracking();
   const [showMachinePosition, setShowMachinePosition] = useState(false);
 
   const gridStyle = {
@@ -21,46 +20,15 @@ const Controls = observer(() => {
   const handleAxisMove = async (axis: 'X' | 'Y' | 'Z', increment: number) => {
     const jogSpeed = (settingsStore.grbl.jog_speed ?? 100) * 60; // Default to 100mm/s if not set
     const command = `$J=G21 G91 F${jogSpeed} ${axis}${increment}`;
-
-    try {
-      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
-        message: command
-      });
-    } catch (error) {
-      toastStore.show(
-        'Jog command failed',
-        `Failed to send the jog command to the controller: ${error.message}`,
-        'danger'
-      );
-    }
+    await sendCommand(command);
   };
 
   const handleAxisHome = async (axis: 'X' | 'Y' | 'Z' | 'XY') => {
-    try {
-      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
-        message: `$H${axis}`
-      });
-    } catch (error) {
-      toastStore.show(
-        'Homing failed',
-        `Failed to home ${axis}: ${error.message}`,
-        'danger'
-      );
-    }
+    await sendCommand(`$H${axis}`, true);
   };
 
   const handleDisableSteppers = async () => {
-    try {
-      await serialService.sendCommand(OutgoingMessageType.GrblAction, {
-        message: '$MD'
-      });
-    } catch (error) {
-      toastStore.show(
-        'Disable steppers failed',
-        `Failed to disable steppers: ${error.message}`,
-        'danger'
-      );
-    }
+    await sendCommand('$MD');
   };
 
   return (
@@ -81,6 +49,7 @@ const Controls = observer(() => {
                 variant="primary"
                 className="me-2"
                 onClick={() => handleAxisHome('XY')}
+                disabled={hasPendingCommands}
               >
                 <i className="bi bi-house-door"></i> Home X/Y
               </Button>
@@ -88,6 +57,7 @@ const Controls = observer(() => {
                 variant="primary"
                 className="me-4"
                 onClick={handleDisableSteppers}
+                disabled={hasPendingCommands}
               >
                 <i className="bi bi-lock"></i> Disable Steppers
               </Button>
@@ -106,12 +76,14 @@ const Controls = observer(() => {
             position={currentPosition.x}
             onMove={(increment) => handleAxisMove('X', increment)}
             onHome={() => handleAxisHome('X')}
+            disabled={hasPendingCommands}
           />
           <AxisControl
             axis="Y"
             position={currentPosition.y}
             onMove={(increment) => handleAxisMove('Y', increment)}
             onHome={() => handleAxisHome('Y')}
+            disabled={hasPendingCommands}
           />
           <AxisControl
             axis="Z"
@@ -119,6 +91,7 @@ const Controls = observer(() => {
             onMove={(increment) => handleAxisMove('Z', increment)}
             onHome={() => handleAxisHome('Z')}
             increments={[0.05, 0.1, 1, 10]}
+            disabled={hasPendingCommands}
           />
         </Card.Body>
       </Card>

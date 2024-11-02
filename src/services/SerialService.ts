@@ -111,7 +111,7 @@ export class SerialService implements ISerialService {
     }
   }
 
-  async sendMessage(message: unknown) {
+  async sendMessage(message: OutgoingMessage) {
     if (!this.writer) {
       throw new Error('Not connected to serial port');
     }
@@ -164,7 +164,7 @@ export class SerialService implements ISerialService {
   async sendCommand<T extends OutgoingMessageType>(
     action: T,
     payload?: CommandPayloadMap[T]
-  ): Promise<void> {
+  ): Promise<OutgoingMessage> {
     let message: OutgoingMessage;
 
     switch (action) {
@@ -198,5 +198,6 @@ export class SerialService implements ISerialService {
     }
 
     await this.sendMessage(message);
+    return message;
   }
 }

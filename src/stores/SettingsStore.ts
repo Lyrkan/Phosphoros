@@ -94,5 +94,11 @@ export class SettingsStore {
     // Send only the changed settings
     this.debouncedSendUpdate(settings);
   }
-}import { RootStore } from "./RootStore";
 
+  cleanup() {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = null;
+    }
+  }
+}

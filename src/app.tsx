@@ -11,15 +11,13 @@ import Status from './routes/Status';
 import Controls from './routes/Controls';
 import Settings from './routes/Settings';
 import Debug from './routes/Debug';
-import { RootStoreProvider , RootStore } from './stores/RootStore';
+import { RootStoreProvider, RootStore } from './stores/RootStore';
 import NetworkSettings from './routes/Settings/NetworkSettings';
 import BedSettings from './routes/Settings/BedSettings';
 import ProbesSettings from './routes/Settings/ProbesSettings';
 import RelaysSettings from './routes/Settings/RelaysSettings';
 import GrblSettings from './routes/Settings/GrblSettings';
-import { MessageHandlerService } from './services/MessageHandlerService';
-import { SerialService } from './services/SerialService';
-import { SerialServiceProvider } from './contexts/SerialServiceContext';
+import { SerialServiceProvider } from './providers/SerialServiceProvider';
 
 const router = createMemoryRouter([
   {
@@ -46,17 +44,11 @@ const router = createMemoryRouter([
 ]);
 
 const rootStore = new RootStore();
-const messageHandler = new MessageHandlerService(rootStore);
-const serialService = new SerialService(rootStore.serialStore, messageHandler);
 
-// The SettingsStore needs the SerialService to send settings updates to the controller
-rootStore.settingsStore.setSerialService(serialService);
-
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!);
 root.render(
   <RootStoreProvider value={rootStore}>
-    <SerialServiceProvider value={serialService}>
+    <SerialServiceProvider>
       <RouterProvider router={router} />
     </SerialServiceProvider>
   </RootStoreProvider>

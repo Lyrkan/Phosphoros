@@ -12,6 +12,10 @@ describe('MessageHandlerService', () => {
     messageHandler = new MessageHandlerService(rootStore);
   });
 
+  afterEach(() => {
+    rootStore.settingsStore.cleanup();
+  });
+
   describe('handleStatusReport', () => {
     it('should update cooling store values', () => {
       messageHandler.handleMessage({

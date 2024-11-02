@@ -1,4 +1,4 @@
-import { CommandPayloadMap, OutgoingMessageType } from "../../types/Messages";
+import { CommandPayloadMap, OutgoingMessage, OutgoingMessageType } from "../../types/Messages";
 
 export interface ISerialService {
   connect(): Promise<void>;
@@ -7,5 +7,5 @@ export interface ISerialService {
   sendCommand<T extends OutgoingMessageType>(
     action: T,
     payload?: CommandPayloadMap[T]
-  ): Promise<void>
+  ): Promise<OutgoingMessage>
 }

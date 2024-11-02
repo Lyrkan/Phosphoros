@@ -3,9 +3,17 @@ import { ControllerSettings } from '../types/Settings';
 import { RootStore } from '../stores/RootStore';
 import { LaserState, LidState, FlameSensorStatus, UartStatus , PositionType } from '../types/Stores';
 import { IMessageHandlerService } from './interfaces/IMessageHandlerService';
+import { useCommandTracking } from '../hooks/useCommandTracking';
 
 export class MessageHandlerService implements IMessageHandlerService {
-  constructor(private store: RootStore) {}
+  private commandTracking?: ReturnType<typeof useCommandTracking>;
+
+  constructor(private store: RootStore) {
+  }
+
+  setCommandTracking(commandTracking: ReturnType<typeof useCommandTracking>) {
+    this.commandTracking = commandTracking;
+  }
 
   handleMessage(message: IncomingMessage): void {
     switch (message.t) {
@@ -92,7 +100,7 @@ export class MessageHandlerService implements IMessageHandlerService {
   }
 
   private handleGrblAck(payload: GrblAckPayload): void {
-    console.log(`Grbl acknowledgment for command ${payload.id}: ${payload.success ? 'success' : 'error'}`);
+    this.commandTracking?.handleCommandAck(payload.id, payload.success);
   }
 
   private handleControllerSettings(settings: ControllerSettings): void {
