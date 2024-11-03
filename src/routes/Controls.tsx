@@ -38,7 +38,7 @@ const Controls = observer(() => {
   return (
     <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
       <Card className="border-primary g-col-12">
-        <CardHeader icon="bi-dpad" title="Axis controls" />
+        <CardHeader icon="bi-dpad" title="Toolhead" />
         <Card.Body>
           <Row className="mb-3 align-items-center">
             <Col xs={3}>

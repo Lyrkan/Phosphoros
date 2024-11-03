@@ -80,6 +80,9 @@ export class SerialService implements ISerialService {
       }
 
       this.startReading();
+
+      // Request initial settings after successful connection
+      await this.sendCommand(OutgoingMessageType.SettingsGet);
     } catch (error) {
       this.store.setConnectionState(UartStatus.Error);
       this.store.setError(error.message);

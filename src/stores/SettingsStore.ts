@@ -21,6 +21,7 @@ export class SettingsStore {
   relays: RelaySettings = {};
   private serialService: ISerialService | null = null;
   private updateTimeout: NodeJS.Timeout | null = null;
+  isLoaded = false;
 
   constructor(toastStore: ToastStore) {
     this.toastStore = toastStore;

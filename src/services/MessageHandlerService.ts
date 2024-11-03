@@ -105,6 +105,7 @@ export class MessageHandlerService implements IMessageHandlerService {
 
   private handleControllerSettings(settings: ControllerSettings): void {
     this.store.settingsStore.updateSettings(settings);
+    this.store.settingsStore.isLoaded = true;
   }
 
   private mapGrblState(state: number): LaserState {

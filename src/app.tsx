@@ -45,6 +45,7 @@ const router = createMemoryRouter([
 
 const rootStore = new RootStore();
 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(document.getElementById('app')!);
 root.render(
   <RootStoreProvider value={rootStore}>
