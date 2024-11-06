@@ -230,8 +230,8 @@ const Status = observer(() => {
     <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
       <Card className="border-primary g-col-6">
         <CardHeader
-          icon="bi-bullseye"
-          title="Grbl"
+          icon="bi-cpu"
+          title="FluidNC"
           status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
         />
         <Card.Body>
