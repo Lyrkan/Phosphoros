@@ -5,9 +5,12 @@ import CardHeader from "../components/CardHeader";
 import AxisControl from "../components/AxisControl";
 import { useStore } from "../stores/RootStore";
 import { useCommandTracking } from '../hooks/useCommandTracking';
+import { useSerialService } from '../contexts/SerialServiceContext';
+import { OutgoingMessageType, RelaysSetPayload } from '../types/Messages';
 
 const Controls = observer(() => {
-  const { laserStore, settingsStore } = useStore();
+  const { laserStore, settingsStore, toastStore } = useStore();
+  const serialService = useSerialService();
   const { sendCommand, hasPendingCommands } = useCommandTracking();
   const [showMachinePosition, setShowMachinePosition] = useState(false);
 
@@ -33,6 +36,20 @@ const Controls = observer(() => {
 
   const handleDisableSteppers = async () => {
     await sendCommand('$MD');
+  };
+
+  const handleRelayToggle = async (relay: keyof RelaysSetPayload, newValue: boolean) => {
+    try {
+      await serialService.sendCommand(OutgoingMessageType.RelaysSet, {
+        [relay]: newValue
+      });
+    } catch (error) {
+      toastStore.show(
+        'Action Failed',
+        `Failed to toggle ${relay}: ${error.message}`,
+        'danger'
+      );
+    }
   };
 
   return (
@@ -106,9 +123,9 @@ const Controls = observer(() => {
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
-                onClick={() => console.log(`Interlock toggled`)}
+                onClick={() => handleRelayToggle('interlock', !laserStore.interlock)}
                 className="w-100 h-100"
-                active={laserStore.interlock}
+                active={laserStore.interlock === true}
               >
                 <i className="bi bi-shield-lock"></i> Interlock
               </Button>
@@ -116,9 +133,9 @@ const Controls = observer(() => {
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
-                onClick={() => console.log(`Lights toggled`)}
+                onClick={() => handleRelayToggle('light', !laserStore.lights)}
                 className="w-100 h-100"
-                active={laserStore.lights}
+                active={laserStore.lights === true}
               >
                 <i className="bi bi-lightbulb"></i> Lights
               </Button>
@@ -126,9 +143,9 @@ const Controls = observer(() => {
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
-                onClick={() => console.log(`Air Assist toggled`)}
+                onClick={() => handleRelayToggle('air_assist', !laserStore.airAssist)}
                 className="w-100 h-100"
-                active={laserStore.airAssist}
+                active={laserStore.airAssist === true}
               >
                 <i className="bi bi-wind"></i> Air Assist
               </Button>
@@ -136,9 +153,9 @@ const Controls = observer(() => {
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
-                onClick={() => console.log(`Beam Preview toggled`)}
+                onClick={() => handleRelayToggle('beam_preview', !laserStore.beamPreview)}
                 className="w-100 h-100"
-                active={laserStore.beamPreview}
+                active={laserStore.beamPreview === true}
               >
                 <i className="bi bi-eye"></i> Beam Preview
               </Button>

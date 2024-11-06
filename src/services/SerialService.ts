@@ -2,7 +2,7 @@ import { UartStatus } from '../types/Stores';
 import { SerialStore } from '../stores/SerialStore';
 import { MessageHandlerService } from './MessageHandlerService';
 import { ISerialService } from './interfaces/ISerialService';
-import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap } from '../types/Messages';
+import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap, RelaysSetPayload } from '../types/Messages';
 
 export class SerialService implements ISerialService {
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
@@ -193,6 +193,13 @@ export class SerialService implements ISerialService {
         message = {
           a: action,
           p: {}
+        };
+        break;
+
+      case OutgoingMessageType.RelaysSet:
+        message = {
+          a: action,
+          p: payload as RelaysSetPayload
         };
         break;
 

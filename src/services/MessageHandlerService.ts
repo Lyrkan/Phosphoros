@@ -1,7 +1,7 @@
 import { IncomingMessageType, IncomingMessage, StatusReportPayload, GrblReportPayload, GrblMessagePayload, GrblAckPayload } from '../types/Messages';
 import { ControllerSettings } from '../types/Settings';
 import { RootStore } from '../stores/RootStore';
-import { LaserState, LidState, FlameSensorStatus, UartStatus , PositionType } from '../types/Stores';
+import { LaserState, LidState, FlameSensorStatus, UartStatus , PositionType, AlarmState } from '../types/Stores';
 import { IMessageHandlerService } from './interfaces/IMessageHandlerService';
 import { useCommandTracking } from '../hooks/useCommandTracking';
 
@@ -76,6 +76,11 @@ export class MessageHandlerService implements IMessageHandlerService {
       laserStore.currentState = this.mapGrblState(payload.state);
     }
 
+    // Update alarm if present
+    if (payload.alarm !== undefined) {
+      laserStore.alarmState = this.mapGrblAlarm(payload.alarm);
+    }
+
     // Update positions if present
     if (payload.w_pos) {
       laserStore.setPosition(PositionType.Work, payload.w_pos);
@@ -126,5 +131,28 @@ export class MessageHandlerService implements IMessageHandlerService {
     };
 
     return grblStateMap[state] || LaserState.Unknown;
+  }
+
+  private mapGrblAlarm(alarm: number): AlarmState {
+    const grblAlarmMap: { [key: number]: AlarmState } = {
+      0: AlarmState.NoAlarm,
+      1: AlarmState.HardLimit,
+      2: AlarmState.SoftLimit,
+      3: AlarmState.AbortCycle,
+      4: AlarmState.ProbeFailInitial,
+      5: AlarmState.ProbeFailContact,
+      6: AlarmState.HomingFailReset,
+      7: AlarmState.HomingFailDoor,
+      8: AlarmState.FailPulloff,
+      9: AlarmState.HomingFailApproach,
+      10: AlarmState.SpindleControl,
+      11: AlarmState.ControlPin,
+      12: AlarmState.AmbiguousSwitch,
+      13: AlarmState.HardStop,
+      14: AlarmState.Unhomed,
+      15: AlarmState.Init
+    };
+
+    return grblAlarmMap[alarm] || AlarmState.Unknown;
   }
 }

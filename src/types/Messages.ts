@@ -13,6 +13,7 @@ export enum OutgoingMessageType {
   SettingsSet = 1,
   SettingsGet = 2,
   StatusGet = 3,
+  RelaysSet = 4,
 }
 
 export interface StatusReportPayload {
@@ -43,6 +44,7 @@ export interface StatusReportPayload {
 
 export interface GrblReportPayload {
   state?: number;
+  alarm?: number;
   w_pos?: { x: number; y: number; z: number };
   m_pos?: { x: number; y: number; z: number };
   wco?: { x: number; y: number; z: number };
@@ -83,13 +85,20 @@ export interface GrblActionPayload {
   id?: number;
 }
 
+export interface RelaysSetPayload {
+  interlock?: boolean;
+  air_assist?: boolean;
+  light?: boolean;
+  beam_preview?: boolean;
+}
+
 export type CommandPayloadMap = {
   [OutgoingMessageType.GrblAction]: GrblActionPayload;
   [OutgoingMessageType.SettingsSet]: Partial<ControllerSettings>;
   [OutgoingMessageType.SettingsGet]: Record<string, never>;
   [OutgoingMessageType.StatusGet]: Record<string, never>;
-}
-
+  [OutgoingMessageType.RelaysSet]: RelaysSetPayload;
+};
 
 export type IncomingMessage =
   | { t: IncomingMessageType.StatusReport; p: StatusReportPayload }

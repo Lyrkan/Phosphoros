@@ -4,16 +4,16 @@ import { LaserState, AlarmState, PositionType , Position } from "../types/Stores
 export class LaserStore {
   currentState: LaserState = LaserState.Unknown;
   alarmState: AlarmState = AlarmState.Unknown;
-  speed = 0;
 
+  speed = 0;
   workPosition: Position = { x: 0, y: 0, z: 0 };
   machinePosition: Position = { x: 0, y: 0, z: 0 };
   workOffset: Position = { x: 0, y: 0, z: 0 };
 
-  interlock = false;
-  lights = false;
-  airAssist = false;
-  beamPreview = false;
+  interlock?: boolean;
+  lights?: boolean;
+  airAssist?: boolean;
+  beamPreview?: boolean;
 
   constructor() {
     makeAutoObservable(this);
