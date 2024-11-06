@@ -78,7 +78,7 @@ export class MessageHandlerService implements IMessageHandlerService {
 
     // Update alarm if present
     if (payload.alarm !== undefined) {
-      laserStore.alarmState = this.mapGrblAlarm(payload.alarm);
+      laserStore.currentAlarm = this.mapGrblAlarm(payload.alarm);
     }
 
     // Update positions if present

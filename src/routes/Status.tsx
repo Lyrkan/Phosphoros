@@ -27,6 +27,7 @@ const Status = observer(() => {
     justifyContent: 'center',
     color: 'white',
     zIndex: 1,
+    fontSize: '.9em',
   };
 
   const getProgressBarStyle = (variant: string) => ({
@@ -41,96 +42,92 @@ const Status = observer(() => {
     margin: 0,
   };
 
-  const getLaserStateBadge = (state: LaserState): ReactElement|null => {
-    switch (state) {
-      case LaserState.Idle:
-      case LaserState.Jog:
-        return null;
-      case LaserState.Hold:
-      case LaserState.HoldComplete:
-      case LaserState.Door:
-      case LaserState.DoorHold:
-      case LaserState.DoorResume:
-      case LaserState.DoorRestart:
-      case LaserState.Check:
-      case LaserState.Run:
-      case LaserState.Unknown:
-        return <Badge bg="warning">Warning</Badge>;
-      default:
-        return <Badge bg="danger">Error</Badge>;
+  const getStatusBadge = (state: string, warningStates: string[], okStates: string[]): ReactElement|null => {
+    if (okStates.includes(state)) {
+      return null;
     }
+    if (warningStates.includes(state)) {
+      return <Badge bg="warning">Warning</Badge>;
+    }
+    return <Badge bg="danger">Problem</Badge>;
+  };
+
+  const getLaserStateBadge = (state: LaserState): ReactElement|null => {
+    return getStatusBadge(
+      state,
+      [
+        LaserState.Hold,
+        LaserState.HoldComplete,
+        LaserState.Door,
+        LaserState.DoorHold,
+        LaserState.DoorResume,
+        LaserState.DoorRestart,
+        LaserState.Check,
+        LaserState.Run,
+        LaserState.Unknown
+      ],
+      [LaserState.Idle, LaserState.Jog]
+    );
   };
 
   const getAlarmStateBadge = (state: AlarmState): ReactElement|null => {
-    switch (state) {
-      case AlarmState.NoAlarm:
-        return null;
-      case AlarmState.Unknown:
-        return <Badge bg="warning">Warning</Badge>;
-      default:
-        return <Badge bg="danger">Error</Badge>;
+    return getStatusBadge(
+      state,
+      [AlarmState.Unknown],
+      [AlarmState.NoAlarm]
+    );
+  };
+
+  const getLidStateBadge = (state: LidState): ReactElement|null => {
+    return getStatusBadge(
+      state,
+      [LidState.Unknown],
+      [LidState.Closed]
+    );
+  };
+
+  const getFlameSensorBadge = (state: FlameSensorStatus): ReactElement|null => {
+    return getStatusBadge(
+      state,
+      [FlameSensorStatus.Unknown],
+      [FlameSensorStatus.OK]
+    );
+  };
+
+  const getInterlockBadge = (state: boolean | undefined): ReactElement|null => {
+    if (state === undefined) {
+      return <Badge bg="warning">Warning</Badge>;
     }
+    return state ? null : <Badge bg="danger">Error</Badge>;
   };
 
-  const getLidStateBadge = (state: LidState): string => {
-    switch (state) {
-      case LidState.Closed:
-        return 'success';
-      case LidState.Unknown:
-        return 'warning';
-      default:
-        return 'danger';
-    }
+  const getUartStatusBadge = (state: UartStatus): ReactElement|null => {
+    return getStatusBadge(
+      state,
+      [UartStatus.Unknown],
+      [UartStatus.Connected]
+    );
   };
 
-  const getFlameSensorBadge = (state: FlameSensorStatus): string => {
-    switch (state) {
-      case FlameSensorStatus.OK:
-        return 'success';
-      case FlameSensorStatus.Unknown:
-        return 'warning';
-      default:
-        return 'danger';
-    }
+  const getSerialConnectionBadge = (state: UartStatus): ReactElement|null => {
+    return getStatusBadge(
+      state,
+      [UartStatus.Unknown],
+      [UartStatus.Connected]
+    );
   };
 
-  const getInterlockBadge = (state: boolean | undefined): string => {
-    if (state === undefined) return 'warning';
-    return state ? 'success' : 'danger';
-  };
-
-  const getUartStatusBadge = (state: UartStatus): string => {
-    switch (state) {
-      case UartStatus.Connected:
-        return 'success';
-      case UartStatus.Unknown:
-        return 'warning';
-      default:
-        return 'danger';
-    }
-  };
-
-  const getSerialConnectionBadge = (state: UartStatus): string => {
-    switch (state) {
-      case UartStatus.Connected:
-        return 'success';
-      case UartStatus.Unknown:
-        return 'warning';
-      default:
-        return 'danger';
-    }
-  };
-
-  const isWithinBounds = (value: number, min: number | undefined, max: number | undefined) => {
+  const isWithinBounds = (value: number | undefined, min: number | undefined, max: number | undefined) => {
+    if (value === undefined) return false;
     if (min === undefined || value < min) return false;
     if (max === undefined || value > max) return false;
     return true;
   };
 
   const isPanelOk = {
-    fluidnc: (currentState: LaserState, alarmState: AlarmState): boolean => {
+    fluidnc: (currentState: LaserState, currentAlarm: AlarmState): boolean => {
       return (currentState === LaserState.Idle || currentState === LaserState.Jog) &&
-             alarmState === AlarmState.NoAlarm;
+             currentAlarm === AlarmState.NoAlarm;
     },
 
     lids: (frontLidState: LidState, backLidState: LidState): boolean => {
@@ -139,10 +136,10 @@ const Status = observer(() => {
     },
 
     cooling: (
-      inputFlow: number,
-      outputFlow: number,
-      inputTemperature: number,
-      outputTemperature: number
+      inputFlow: number | undefined,
+      outputFlow: number | undefined,
+      inputTemperature: number | undefined,
+      outputTemperature: number | undefined
     ): boolean => {
       const { probes } = settingsStore;
       return isWithinBounds(inputFlow, probes.cooling?.flow?.min, probes.cooling?.flow?.max) &&
@@ -234,8 +231,8 @@ const Status = observer(() => {
       <Card className="border-primary g-col-6">
         <CardHeader
           icon="bi-bullseye"
-          title="Job"
-          status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.alarmState))}
+          title="Grbl"
+          status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
         />
         <Card.Body>
           <p className="d-flex align-items-baseline gap-1">
@@ -245,8 +242,8 @@ const Status = observer(() => {
           </p>
           <p className="d-flex align-items-baseline gap-1">
             <strong className="text-nowrap">Alarm State:</strong>
-            <span className="flex-grow-1 fw-light">{laserStore.alarmState}</span>
-            {getAlarmStateBadge(laserStore.alarmState)}
+            <span className="flex-grow-1 fw-light">{laserStore.currentAlarm}</span>
+            {getAlarmStateBadge(laserStore.currentAlarm)}
           </p>
         </Card.Body>
       </Card>
@@ -257,13 +254,15 @@ const Status = observer(() => {
           status={getStatusProps(isPanelOk.lids(lidsStore.frontLidState, lidsStore.backLidState))}
         />
         <Card.Body>
-          <p>
-            <strong>Front Lid:</strong>{' '}
-            <Badge bg={getLidStateBadge(lidsStore.frontLidState)}>{lidsStore.frontLidState}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">Front Lid:</strong>
+            <span className="flex-grow-1 fw-light">{lidsStore.frontLidState}</span>
+            {getLidStateBadge(lidsStore.frontLidState)}
           </p>
-          <p>
-            <strong>Back Lid:</strong>{' '}
-            <Badge bg={getLidStateBadge(lidsStore.backLidState)}>{lidsStore.backLidState}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">Back Lid:</strong>
+            <span className="flex-grow-1 fw-light">{lidsStore.backLidState}</span>
+            {getLidStateBadge(lidsStore.backLidState)}
           </p>
         </Card.Body>
       </Card>
@@ -278,7 +277,7 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.inputFlow} L/min</div>
+                <div style={progressLabelStyle}>{coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow} L/min` : 'Unknown'}</div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.inputFlow)}
                   min={flowRange.min}
@@ -293,7 +292,7 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.inputTemperature}°C</div>
+                <div style={progressLabelStyle}>{coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature}°C` : 'Unknown'}</div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.inputTemp)}
                   min={tempRange.min}
@@ -308,7 +307,7 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.outputFlow} L/min</div>
+                <div style={progressLabelStyle}>{coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow} L/min` : 'Unknown'}</div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.outputFlow)}
                   min={flowRange.min}
@@ -323,7 +322,7 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.outputTemperature}°C</div>
+                <div style={progressLabelStyle}>{coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature}°C` : 'Unknown'}</div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.outputTemp)}
                   min={tempRange.min}
@@ -343,21 +342,27 @@ const Status = observer(() => {
           status={getStatusProps(isPanelOk.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
         />
         <Card.Body>
-          <p>
-            <strong>Flame Sensor Status:</strong>{' '}
-            <Badge bg={getFlameSensorBadge(systemStore.flameSensorStatus)}>{systemStore.flameSensorStatus}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">Flame Sensor Status:</strong>
+            <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
+            {getFlameSensorBadge(systemStore.flameSensorStatus)}
           </p>
-          <p>
-            <strong>Software interlock:</strong>{' '}
-            <Badge bg={getInterlockBadge(laserStore.interlock)}>{laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">Software interlock:</strong>
+            <span className="flex-grow-1 fw-light">
+              {laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
+            </span>
+            {getInterlockBadge(laserStore.interlock)}
           </p>
-          <p>
-            <strong>UART#1 Status:</strong>{' '}
-            <Badge bg={getUartStatusBadge(systemStore.uartStatus)}>{systemStore.uartStatus}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">UART#1 Status:</strong>
+            <span className="flex-grow-1 fw-light">{systemStore.uartStatus}</span>
+            {getUartStatusBadge(systemStore.uartStatus)}
           </p>
-          <p>
-            <strong>UART#2 Status:</strong>{' '}
-            <Badge bg={getSerialConnectionBadge(serialStore.connectionState)}>{serialStore.connectionState}</Badge>
+          <p className="d-flex align-items-baseline gap-1">
+            <strong className="text-nowrap">UART#2 Status:</strong>
+            <span className="flex-grow-1 fw-light">{(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}</span>
+            {getSerialConnectionBadge(serialStore.connectionState)}
           </p>
         </Card.Body>
       </Card>

@@ -1,7 +1,7 @@
 import { MessageHandlerService } from '../MessageHandlerService';
 import { RootStore } from '../../stores/RootStore';
 import { IncomingMessageType } from '../../types/Messages';
-import { LaserState, LidState, FlameSensorStatus } from '../../types/Stores';
+import { LaserState, LidState, FlameSensorStatus, AlarmState } from '../../types/Stores';
 
 describe('MessageHandlerService', () => {
   let rootStore: RootStore;
@@ -118,6 +118,7 @@ describe('MessageHandlerService', () => {
         t: IncomingMessageType.GrblReport,
         p: {
           state: 1,
+          alarm: 2,
           w_pos: { x: 10, y: 20, z: 30 },
           m_pos: { x: 100, y: 200, z: 300 },
           wco: { x: 90, y: 180, z: 270 },
@@ -126,6 +127,7 @@ describe('MessageHandlerService', () => {
       });
 
       expect(rootStore.laserStore.currentState).toBe(LaserState.Idle);
+      expect(rootStore.laserStore.currentAlarm).toBe(AlarmState.SoftLimit);
       expect(rootStore.laserStore.workPosition).toEqual({ x: 10, y: 20, z: 30 });
       expect(rootStore.laserStore.machinePosition).toEqual({ x: 100, y: 200, z: 300 });
       expect(rootStore.laserStore.workOffset).toEqual({ x: 90, y: 180, z: 270 });

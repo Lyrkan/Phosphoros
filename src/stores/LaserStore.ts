@@ -3,7 +3,7 @@ import { LaserState, AlarmState, PositionType , Position } from "../types/Stores
 
 export class LaserStore {
   currentState: LaserState = LaserState.Unknown;
-  alarmState: AlarmState = AlarmState.Unknown;
+  currentAlarm: AlarmState = AlarmState.Unknown;
 
   speed = 0;
   workPosition: Position = { x: 0, y: 0, z: 0 };

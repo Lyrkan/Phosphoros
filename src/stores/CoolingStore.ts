@@ -1,10 +1,10 @@
 import { makeAutoObservable } from "mobx";
 
 export class CoolingStore {
-  inputFlow = 0;
-  outputFlow = 5;
-  inputTemperature = 20;
-  outputTemperature = 30;
+  inputFlow?: number;
+  outputFlow?: number;
+  inputTemperature?: number;
+  outputTemperature?: number;
 
   constructor() {
     makeAutoObservable(this);
