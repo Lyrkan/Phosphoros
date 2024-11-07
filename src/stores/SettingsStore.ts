@@ -29,23 +29,23 @@ export class SettingsStore {
     makeAutoObservable(this);
   }
 
-  get bed() {
+  get bed(): Readonly<BedSettings> {
     return this._bed;
   }
 
-  get probes() {
+  get probes(): Readonly<ProbeSettings> {
     return this._probes;
   }
 
-  get ota() {
+  get ota(): Readonly<OtaSettings> {
     return this._ota;
   }
 
-  get grbl() {
+  get grbl(): Readonly<GrblSettings> {
     return this._grbl;
   }
 
-  get relays() {
+  get relays(): Readonly<RelaySettings> {
     return this._relays;
   }
 
