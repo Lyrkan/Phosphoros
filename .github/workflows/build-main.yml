@@ -25,6 +25,7 @@ jobs:
           node-version: 20
           architecture: ${{ matrix.arch }}
       - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build:${{ matrix.arch }}
       - uses: actions/upload-artifact@v4

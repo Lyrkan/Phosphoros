@@ -47,9 +47,9 @@ export class DevSimulationService {
 
     // Simulate cooling values with small variations
     coolingStore.setInputFlow(Math.max(0.5, (coolingStore.inputFlow || 3) + this.randomFloat(-0.1, 0.1)));
-    coolingStore.setOutputFlow(Math.min(coolingStore.inputFlow!, (coolingStore.outputFlow || 3) + this.randomFloat(-0.1, 0.1)));
+    coolingStore.setOutputFlow(Math.min(coolingStore.inputFlow, (coolingStore.outputFlow || 3) + this.randomFloat(-0.1, 0.1)));
     coolingStore.setInputTemperature(Math.max(19, (coolingStore.inputTemperature || 19) + this.randomFloat(-0.1, 0.1)));
-    coolingStore.setOutputTemperature(Math.max(coolingStore.inputTemperature!, (coolingStore.outputTemperature || 19) + this.randomFloat(-0.1, 0.1)));
+    coolingStore.setOutputTemperature(Math.max(coolingStore.inputTemperature, (coolingStore.outputTemperature || 19) + this.randomFloat(-0.1, 0.1)));
 
     // Occasionally simulate lid opening (5% chance)
     if (this.randomChance(0.05)) {

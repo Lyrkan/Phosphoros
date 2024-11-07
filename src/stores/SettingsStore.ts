@@ -17,12 +17,12 @@ export class SettingsStore {
   private serialService: ISerialService | null = null;
   private updateTimeout: NodeJS.Timeout | null = null;
 
-  _bed: BedSettings = { control_mode: BedControlMode.Grbl };
-  _probes: ProbeSettings = {};
-  _ota: OtaSettings = {};
-  _grbl: GrblSettings = {};
-  _relays: RelaySettings = {};
-  _isLoaded: boolean = false;
+  private _bed: BedSettings = { control_mode: BedControlMode.Grbl };
+  private _probes: ProbeSettings = {};
+  private _ota: OtaSettings = {};
+  private _grbl: GrblSettings = {};
+  private _relays: RelaySettings = {};
+  private _isLoaded = false;
 
   constructor(toastStore: ToastStore) {
     this.toastStore = toastStore;
@@ -122,6 +122,7 @@ export class SettingsStore {
       if (value === undefined) continue;
 
       if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result[key] = this.deepMerge(target[key] || {} as any, value as any);
       } else {
         result[key] = value;
