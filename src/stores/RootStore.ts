@@ -9,15 +9,13 @@ import { ToastStore } from "./ToastStore";
 import { DevSimulationService } from '../services/DevSimulationService';
 
 export class RootStore {
-  laserStore: LaserStore;
-  lidsStore: LidsStore;
-  coolingStore: CoolingStore;
-  systemStore: SystemStore;
-  serialStore: SerialStore;
-  settingsStore: SettingsStore;
-  toastStore: ToastStore;
-
-  private devSimulation: DevSimulationService;
+  readonly laserStore: LaserStore;
+  readonly lidsStore: LidsStore;
+  readonly coolingStore: CoolingStore;
+  readonly systemStore: SystemStore;
+  readonly serialStore: SerialStore;
+  readonly settingsStore: SettingsStore;
+  readonly toastStore: ToastStore;
 
   constructor() {
     this.laserStore = new LaserStore();
