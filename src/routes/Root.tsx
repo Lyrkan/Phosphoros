@@ -11,7 +11,7 @@ export default observer(function Root({ children }: { children?: JSX.Element }) 
 
   return (
     <>
-      {!(globalThis as {isDev?: boolean}).isDev && showSplashscreen && <Splashscreen />}
+      {!globalThis.isDev && showSplashscreen && <Splashscreen />}
       <Navbar/>
       <div id="content" className="d-flex flex-grow-1">
         { children ?? <Outlet /> }

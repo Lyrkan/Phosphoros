@@ -10,11 +10,15 @@ export interface Toast {
 }
 
 export class ToastStore {
-  toasts: Toast[] = [];
   private nextId = 1;
+  private _toasts: Toast[] = [];
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get toasts(): ReadonlyArray<Toast> {
+    return this._toasts;
   }
 
   show(title: string, message: string, variant: Toast['variant'] = 'info', autohide = true, delay = 3000) {
@@ -26,10 +30,10 @@ export class ToastStore {
       autohide,
       delay
     };
-    this.toasts.push(toast);
+    this._toasts.push(toast);
   }
 
   remove(id: number) {
-    this.toasts = this.toasts.filter(toast => toast.id !== id);
+    this._toasts = this._toasts.filter(toast => toast.id !== id);
   }
 }

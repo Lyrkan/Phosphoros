@@ -1,17 +1,17 @@
 export enum LaserState {
-  Idle = "Idle",
-  Run = "Run",
+  Idle = "Idling",
+  Run = "Running",
   Hold = "Hold",
   HoldComplete = "Hold Complete",
-  Jog = "Jog",
+  Jog = "Jogging",
   Alarm = "Alarm",
-  Door = "Door",
+  Door = "Door Opened",
   DoorHold = "Door Hold",
   DoorResume = "Door Resume",
   DoorRestart = "Door Restart",
   Check = "Check",
-  Home = "Home",
-  Sleep = "Sleep",
+  Home = "Homing",
+  Sleep = "Sleeping",
   Unknown = "Unknown"
 }
 
@@ -43,7 +43,7 @@ export enum LidState {
 
 export enum FlameSensorStatus {
   Unknown = "Unknown",
-  OK = "OK",
+  OK = "No fire detected",
   Triggered = "Triggered"
 }
 

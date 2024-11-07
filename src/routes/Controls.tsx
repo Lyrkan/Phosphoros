@@ -7,12 +7,13 @@ import { useStore } from "../stores/RootStore";
 import { useCommandTracking } from '../hooks/useCommandTracking';
 import { useSerialService } from '../contexts/SerialServiceContext';
 import { OutgoingMessageType, RelaysSetPayload } from '../types/Messages';
+import { LaserState } from "../types/Stores";
 
 const Controls = observer(() => {
   const { laserStore, settingsStore, toastStore } = useStore();
   const serialService = useSerialService();
   const { sendCommand, hasPendingCommands } = useCommandTracking();
-  const [showMachinePosition, setShowMachinePosition] = useState(false);
+  const [showMachinePosition, setShowMachinePosition] = useState(true);
 
   const gridStyle = {
     gridAutoRows: '1fr'
@@ -21,7 +22,7 @@ const Controls = observer(() => {
   const currentPosition = showMachinePosition ? laserStore.machinePosition : laserStore.workPosition;
 
   const isControlDisabled = () => {
-    return hasPendingCommands || laserStore.currentState !== 'Idle';
+    return hasPendingCommands || laserStore.currentState !== LaserState.Idle;
   };
 
   const handleAxisMove = async (axis: 'X' | 'Y' | 'Z', increment: number) => {
@@ -55,7 +56,13 @@ const Controls = observer(() => {
   return (
     <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
       <Card className="border-primary g-col-12">
-        <CardHeader icon="bi-dpad" title="Toolhead" />
+        <CardHeader
+          icon="bi-dpad"
+          title="Toolhead"
+          note={isControlDisabled() ? (
+            hasPendingCommands ? "Commands are pending..." : "Machine is busy..."
+          ) : undefined}
+        />
         <Card.Body>
           <Row className="mb-3 align-items-center">
             <Col xs={3}>

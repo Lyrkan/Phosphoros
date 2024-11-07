@@ -44,7 +44,7 @@ const Status = observer(() => {
 
   const getStatusBadge = (state: string, warningStates: string[], okStates: string[]): ReactElement|null => {
     if (okStates.includes(state)) {
-      return null;
+      return <Badge bg="success">OK</Badge>;
     }
     if (warningStates.includes(state)) {
       return <Badge bg="warning">Warning</Badge>;
@@ -94,11 +94,11 @@ const Status = observer(() => {
     );
   };
 
-  const getInterlockBadge = (state: boolean | undefined): ReactElement|null => {
-    if (state === undefined) {
+  const getInterlockBadge = (enabled: boolean | undefined): ReactElement|null => {
+    if (!enabled) {
       return <Badge bg="warning">Warning</Badge>;
     }
-    return state ? null : <Badge bg="danger">Error</Badge>;
+    return  <Badge bg="success">Ok</Badge>;
   };
 
   const getUartStatusBadge = (state: UartStatus): ReactElement|null => {
@@ -126,7 +126,7 @@ const Status = observer(() => {
 
   const isPanelOk = {
     fluidnc: (currentState: LaserState, currentAlarm: AlarmState): boolean => {
-      return (currentState === LaserState.Idle || currentState === LaserState.Jog) &&
+      return (currentState === LaserState.Idle || currentState === LaserState.Jog || currentState === LaserState.Run) &&
              currentAlarm === AlarmState.NoAlarm;
     },
 
@@ -160,7 +160,7 @@ const Status = observer(() => {
   };
 
   const getStatusProps = (isOk: boolean) => ({
-    text: isOk ? "OK" : "Potential issue detected",
+    text: isOk ? "OK" : "Issue detected",
     variant: isOk ? "success" : "danger"
   } as const);
 
@@ -277,7 +277,9 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow} L/min` : 'Unknown'}</div>
+                <div style={progressLabelStyle}>
+                  {coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow.toFixed(1)} L/min` : 'Unknown'}
+                </div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.inputFlow)}
                   min={flowRange.min}
@@ -292,7 +294,9 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature}°C` : 'Unknown'}</div>
+                <div style={progressLabelStyle}>
+                  {coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature.toFixed(1)}°C` : 'Unknown'}
+                </div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.inputTemp)}
                   min={tempRange.min}
@@ -307,7 +311,9 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow} L/min` : 'Unknown'}</div>
+                <div style={progressLabelStyle}>
+                  {coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow.toFixed(1)} L/min` : 'Unknown'}
+                </div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.outputFlow)}
                   min={flowRange.min}
@@ -322,7 +328,9 @@ const Status = observer(() => {
             <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
             <Col xs={8}>
               <div style={progressBarContainerStyle}>
-                <div style={progressLabelStyle}>{coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature}°C` : 'Unknown'}</div>
+                <div style={progressLabelStyle}>
+                  {coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature.toFixed(1)}°C` : 'Unknown'}
+                </div>
                 <ProgressBar
                   style={getProgressBarStyle(progressBarVariants.outputTemp)}
                   min={tempRange.min}

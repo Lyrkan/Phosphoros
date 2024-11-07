@@ -39,19 +39,21 @@ export class MessageHandlerService implements IMessageHandlerService {
     const { laserStore, lidsStore, coolingStore, systemStore } = this.store;
 
     // Update cooling store
-    coolingStore.inputFlow = payload.sensors.cooling.flow.in;
-    coolingStore.outputFlow = payload.sensors.cooling.flow.out;
-    coolingStore.inputTemperature = payload.sensors.cooling.temp.in;
-    coolingStore.outputTemperature = payload.sensors.cooling.temp.out;
+    coolingStore.setInputFlow(payload.sensors.cooling.flow.in);
+    coolingStore.setOutputFlow(payload.sensors.cooling.flow.out);
+    coolingStore.setInputTemperature(payload.sensors.cooling.temp.in);
+    coolingStore.setOutputTemperature(payload.sensors.cooling.temp.out);
 
     // Update lids store
-    lidsStore.frontLidState = payload.sensors.lids.front === 'opened' ? LidState.Opened : LidState.Closed;
-    lidsStore.backLidState = payload.sensors.lids.back === 'opened' ? LidState.Opened : LidState.Closed;
+    lidsStore.setFrontLidState(payload.sensors.lids.front === 'opened' ? LidState.Opened : LidState.Closed);
+    lidsStore.setBackLidState(payload.sensors.lids.back === 'opened' ? LidState.Opened : LidState.Closed);
 
     // Update system store
-    systemStore.flameSensorStatus = payload.sensors.flame_sensor === 'triggered'
+    systemStore.setFlameSensorStatus(
+      payload.sensors.flame_sensor === 'triggered'
       ? FlameSensorStatus.Triggered
-      : FlameSensorStatus.OK;
+      : FlameSensorStatus.OK
+    );
 
     // Map UART status
     const uartStatusMap: { [key: number]: UartStatus } = {
@@ -60,12 +62,12 @@ export class MessageHandlerService implements IMessageHandlerService {
       2: UartStatus.Disconnected
     };
 
-    systemStore.uartStatus = uartStatusMap[payload.uart] || UartStatus.Unknown;
+    systemStore.setUartStatus(uartStatusMap[payload.uart] || UartStatus.Unknown);
 
     // Update laser store relays
-    laserStore.interlock = payload.relays.interlock;
-    laserStore.lights = payload.relays.light;
-    laserStore.beamPreview = payload.relays.beam_preview;
+    laserStore.setInterlock(payload.relays.interlock);
+    laserStore.setLights(payload.relays.light);
+    laserStore.setBeamPreview(payload.relays.beam_preview);
   }
 
   private handleGrblReport(payload: GrblReportPayload): void {
@@ -73,12 +75,12 @@ export class MessageHandlerService implements IMessageHandlerService {
 
     // Update state if present
     if (payload.state !== undefined) {
-      laserStore.currentState = this.mapGrblState(payload.state);
+      laserStore.setState(this.mapGrblState(payload.state));
     }
 
     // Update alarm if present
     if (payload.alarm !== undefined) {
-      laserStore.currentAlarm = this.mapGrblAlarm(payload.alarm);
+      laserStore.setAlarm(this.mapGrblAlarm(payload.alarm));
     }
 
     // Update positions if present
@@ -96,7 +98,7 @@ export class MessageHandlerService implements IMessageHandlerService {
 
     // Update speed if present
     if (payload.feed?.rate !== undefined) {
-      laserStore.speed = payload.feed.rate;
+      laserStore.setSpeed(payload.feed.rate);
     }
   }
 
@@ -110,7 +112,7 @@ export class MessageHandlerService implements IMessageHandlerService {
 
   private handleControllerSettings(settings: ControllerSettings): void {
     this.store.settingsStore.updateSettings(settings);
-    this.store.settingsStore.isLoaded = true;
+    this.store.settingsStore.setIsLoaded(true);
   }
 
   private mapGrblState(state: number): LaserState {

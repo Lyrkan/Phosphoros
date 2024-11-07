@@ -1,8 +1,19 @@
 import { Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+import { useEffect, useState } from 'react';
 import logo from '../../assets/logo-mini.svg';
 
 export default function Navbar() {
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <BootstrapNavbar expand="lg" fixed='top' className="bg-primary">
       <Container className="d-flex align-items-center gap-2">
@@ -16,6 +27,7 @@ export default function Navbar() {
           <LinkContainer to="/settings/grbl"><Nav.Link><i className="bi bi-gear"/> Settings</Nav.Link></LinkContainer>
           <LinkContainer to="/debug"><Nav.Link><i className="bi bi-chevron-right"/> Debug</Nav.Link></LinkContainer>
         </Nav>
+        <span className="text-light small">{currentTime}</span>
       </Container>
     </BootstrapNavbar>
   )

@@ -6,6 +6,8 @@ import { LidsStore } from "./LidsStore";
 import { CoolingStore } from "./CoolingStore";
 import { SystemStore } from "./SystemStore";
 import { ToastStore } from "./ToastStore";
+import { DevSimulationService } from '../services/DevSimulationService';
+
 export class RootStore {
   laserStore: LaserStore;
   lidsStore: LidsStore;
@@ -15,6 +17,8 @@ export class RootStore {
   settingsStore: SettingsStore;
   toastStore: ToastStore;
 
+  private devSimulation: DevSimulationService;
+
   constructor() {
     this.laserStore = new LaserStore();
     this.lidsStore = new LidsStore();
@@ -23,6 +27,10 @@ export class RootStore {
     this.serialStore = new SerialStore();
     this.toastStore = new ToastStore();
     this.settingsStore = new SettingsStore(this.toastStore);
+
+    if (globalThis.isDev) {
+      (new DevSimulationService(this)).start();
+    }
   }
 }
 

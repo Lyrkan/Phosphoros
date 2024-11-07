@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import {
   BedSettings,
   ProbeSettings,
@@ -14,23 +14,80 @@ import { ToastStore } from "./ToastStore";
 
 export class SettingsStore {
   private toastStore: ToastStore;
-  bed: BedSettings = { control_mode: BedControlMode.Grbl };
-  probes: ProbeSettings = {};
-  ota: OtaSettings = {};
-  grbl: GrblSettings = {};
-  relays: RelaySettings = {};
   private serialService: ISerialService | null = null;
   private updateTimeout: NodeJS.Timeout | null = null;
-  isLoaded = false;
+
+  _bed: BedSettings = { control_mode: BedControlMode.Grbl };
+  _probes: ProbeSettings = {};
+  _ota: OtaSettings = {};
+  _grbl: GrblSettings = {};
+  _relays: RelaySettings = {};
+  _isLoaded: boolean = false;
 
   constructor(toastStore: ToastStore) {
     this.toastStore = toastStore;
     makeAutoObservable(this);
   }
 
-  setSerialService(service: ISerialService) {
-    this.serialService = service;
+  get bed() {
+    return this._bed;
   }
+
+  get probes() {
+    return this._probes;
+  }
+
+  get ota() {
+    return this._ota;
+  }
+
+  get grbl() {
+    return this._grbl;
+  }
+
+  get relays() {
+    return this._relays;
+  }
+
+  get isLoaded() {
+    return this._isLoaded;
+  }
+
+  setSerialService = action((service: ISerialService) => {
+    this.serialService = service;
+  });
+
+  cleanup = () => {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = null;
+    }
+  };
+
+  setIsLoaded = action((loaded: boolean) => {
+    this._isLoaded = loaded;
+  });
+
+  updateSettings = action((settings: ControllerSettings) => {
+    if (settings.bed) {
+      this._bed = this.deepMerge(this._bed, settings.bed);
+    }
+    if (settings.probes) {
+      this._probes = this.deepMerge(this._probes, settings.probes);
+    }
+    if (settings.ota) {
+      this._ota = this.deepMerge(this._ota, settings.ota);
+    }
+    if (settings.grbl) {
+      this._grbl = this.deepMerge(this._grbl, settings.grbl);
+    }
+    if (settings.relays) {
+      this._relays = this.deepMerge(this._relays, settings.relays);
+    }
+
+    // Send only the changed settings
+    this.debouncedSendUpdate(settings);
+  });
 
   private debouncedSendUpdate = (settings: Partial<ControllerSettings>) => {
     if (this.updateTimeout) {
@@ -65,7 +122,6 @@ export class SettingsStore {
       if (value === undefined) continue;
 
       if (value && typeof value === 'object' && !Array.isArray(value)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result[key] = this.deepMerge(target[key] || {} as any, value as any);
       } else {
         result[key] = value;
@@ -73,33 +129,5 @@ export class SettingsStore {
     }
 
     return result;
-  }
-
-  updateSettings(settings: ControllerSettings) {
-    if (settings.bed) {
-      this.bed = this.deepMerge(this.bed, settings.bed);
-    }
-    if (settings.probes) {
-      this.probes = this.deepMerge(this.probes, settings.probes);
-    }
-    if (settings.ota) {
-      this.ota = this.deepMerge(this.ota, settings.ota);
-    }
-    if (settings.grbl) {
-      this.grbl = this.deepMerge(this.grbl, settings.grbl);
-    }
-    if (settings.relays) {
-      this.relays = this.deepMerge(this.relays, settings.relays);
-    }
-
-    // Send only the changed settings
-    this.debouncedSendUpdate(settings);
-  }
-
-  cleanup() {
-    if (this.updateTimeout) {
-      clearTimeout(this.updateTimeout);
-      this.updateTimeout = null;
-    }
   }
 }

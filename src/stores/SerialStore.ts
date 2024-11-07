@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { UartStatus } from "../types/Stores";
 
 interface SerialMessage {
@@ -7,41 +7,58 @@ interface SerialMessage {
 }
 
 export class SerialStore {
-  connectionState: UartStatus = UartStatus.Disconnected;
-  error: string | null = null;
+  private _connectionState: UartStatus = UartStatus.Disconnected;
+  private _error: string | null = null;
+  private _messages: SerialMessage[] = [];
+  private _lastMessageTime = 0;
+
   port: SerialPort | null = null;
-  messages: SerialMessage[] = [];
-  lastMessageTime = 0;
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  setConnectionState(state: UartStatus) {
-    this.connectionState = state;
+  get connectionState() {
+    return this._connectionState;
   }
 
-  setError(error: string | null) {
-    this.error = error;
+  get error() {
+    return this._error;
   }
 
-  setPort(port: SerialPort | null) {
+  get messages(): ReadonlyArray<SerialMessage> {
+    return this._messages;
+  }
+
+  get lastMessageTime() {
+    return this._lastMessageTime;
+  }
+
+  setConnectionState = action((state: UartStatus) => {
+    this._connectionState = state;
+  });
+
+  setError = action((error: string | null) => {
+    this._error = error;
+  });
+
+  setPort = action((port: SerialPort | null) => {
     this.port = port;
-  }
+  });
 
-  addMessage(text: string) {
+  addMessage = action((text: string) => {
     const timestamp = Date.now();
-    this.messages.push({ timestamp, text });
-    this.lastMessageTime = timestamp;
+    this._messages.push({ timestamp, text });
+    this._lastMessageTime = timestamp;
 
     // Keep only the last 100 messages
-    if (this.messages.length > 100) {
-      this.messages.shift();
+    if (this._messages.length > 100) {
+      this._messages.shift();
     }
-  }
+  });
 
-  clearMessages() {
-    this.messages = [];
-    this.lastMessageTime = 0;
-  }
+  clearMessages = action(() => {
+    this._messages = [];
+    this._lastMessageTime = 0;
+  });
 }
