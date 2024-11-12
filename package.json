@@ -4,8 +4,8 @@
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
-    "build:x64": "electron-forge package --arch=x64 && electron-builder build --publish=never --x64 --linux snap --prepackaged=out/k40-control-panel-display-linux-x64",
-    "build:arm64": "electron-forge package --arch=arm64 && electron-builder build --publish=never --arm64 --linux snap --prepackaged=out/k40-control-panel-display-linux-arm64",
+    "build:x64": "electron-forge package --arch=x64 && electron-builder build --publish=never --x64 --linux appImage --prepackaged=out/k40-control-panel-display-linux-x64",
+    "build:arm64": "electron-forge package --arch=arm64 && electron-builder build --publish=never --arm64 --linux appImage --prepackaged=out/k40-control-panel-display-linux-arm64",
     "lint": "eslint --ext .ts,.tsx .",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -61,10 +61,7 @@
   "build": {
     "appId": "net.adrastee.k40-control-panel-display",
     "linux": {
-      "category": "Development",
-      "target": [
-        "snap"
-      ]
+      "category": "Development"
     }
   }
 }

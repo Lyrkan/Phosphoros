@@ -10,29 +10,22 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      # TODO Add arm64 when public runners are available
-      matrix:
-        arch: [ 'x64' ]
-        include:
-          - arch: x64
-            os: ubuntu-24.04
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          architecture: ${{ matrix.arch }}
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run build:${{ matrix.arch }}
+      - run: npm run build:x64
+      - run: npm run build:arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ matrix.arch }}
+          name: artifacts
           if-no-files-found: error
-          path: dist/*.snap
+          path: dist/*.AppImage
           retention-days: 1
 
   publish:
@@ -61,4 +54,4 @@ jobs:
           draft: false
           fail_on_unmatched_files: true
           files: |
-            dist/**/*.snap
+            dist/**/*.AppImage
