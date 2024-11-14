@@ -40,6 +40,7 @@ __Create a user for the application:__
 ```
 $ sudo useradd kiosk -m
 $ sudo passwd kiosk 
+$ sudo usermod -a -G input,audio,video,render,gpio,dialout kiosk
 $ sudo systemctl edit --full --force user-session.service
 
 [Service]

@@ -3,14 +3,24 @@ import { observer } from 'mobx-react-lite';
 import { UartStatus } from '../types/Stores';
 import { useSerialService } from '../contexts/SerialServiceContext';
 import { Button } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
 
 import splashscreen from '../../assets/splashscreen.svg';
 
 const Splashscreen = observer(() => {
   const { serialStore, settingsStore } = useStore();
   const serialService = useSerialService();
+  const [showSkip, setShowSkip] = useState(false);
   const hasError = serialStore.connectionState === UartStatus.Error;
   const isConnected = serialStore.connectionState === UartStatus.Connected;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkip(true);
+    }, 10000); // Show skip button after 10 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleConnect = async () => {
     try {
@@ -18,6 +28,10 @@ const Splashscreen = observer(() => {
     } catch (error) {
       // Error handling is already done in SerialService
     }
+  };
+
+  const handleSkip = () => {
+    settingsStore.setIsLoaded(true);
   };
 
   return (
@@ -58,9 +72,21 @@ const Splashscreen = observer(() => {
           <Button
             variant="primary"
             onClick={handleConnect}
+            className="mb-2"
           >
             Retry Connection
           </Button>
+          {showSkip && (
+            <div>
+              <Button
+                variant="link"
+                onClick={handleSkip}
+                className="text-white"
+              >
+                Skip Loading
+              </Button>
+            </div>
+          )}
         </div>
       ) : isConnected && !settingsStore.isLoaded ? (
         <div
@@ -74,9 +100,21 @@ const Splashscreen = observer(() => {
           <Button
             variant="warning"
             onClick={handleConnect}
+            className="mb-2"
           >
             Reconnect
           </Button>
+          {showSkip && (
+            <div>
+              <Button
+                variant="link"
+                onClick={handleSkip}
+                className="text-white"
+              >
+                Skip Loading
+              </Button>
+            </div>
+          )}
         </div>
       ) : settingsStore.isLoaded ? (
         <div
@@ -100,9 +138,21 @@ const Splashscreen = observer(() => {
           <Button
             variant="primary"
             onClick={handleConnect}
+            className="mb-2"
           >
             Connect
           </Button>
+          {showSkip && (
+            <div>
+              <Button
+                variant="link"
+                onClick={handleSkip}
+                className="text-white"
+              >
+                Skip Loading
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
