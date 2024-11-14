@@ -5,6 +5,7 @@ import { useStore } from "../stores/RootStore";
 import { UartStatus } from "../types/Stores";
 import CardHeader from "../components/CardHeader";
 import { useSerialService } from '../contexts/SerialServiceContext';
+import { OutgoingMessageType } from "../types/Messages";
 
 export default observer(function Debug() {
   const { serialStore } = useStore();
@@ -37,7 +38,7 @@ export default observer(function Debug() {
     e.preventDefault();
     if (message.trim()) {
       try {
-        await serialService.sendMessage({ command: message });
+        await serialService.sendCommand(OutgoingMessageType.GrblAction, { message });
         setMessage("");
       } catch (error) {
         console.error('Failed to send message:', error);

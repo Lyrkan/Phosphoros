@@ -1,4 +1,19 @@
-# K40-Control-Panel Display
+<h1 align="center">K40 Control Panel Display</h1>
+
+<p align="center"><i>Raspberry Pi display for the <a href="https://github.com/Lyrkan/K40-Control-Panel">K40 Control Panel</a></i></p>
+
+
+
+<p align="center">
+    <img width="240" height="160" src="images/screenshot-status.jpg"> 
+    <img width="240" height="160" src="images/screenshot-controls.jpg">
+</p>
+
+<p align="center">
+    <a title="License" href="https://github.com/Lyrkan/K40-Control-Panel-Display/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Lyrkan/K40-Control-Panel-Display.svg"></a>
+    <img alt="Build status" src="https://github.com/Lyrkan/K40-Control-Panel-Display/actions/workflows/build-main.yml/badge.svg">
+    <a title="Last release"><img src="https://img.shields.io/github/release/Lyrkan/K40-Control-Panel-Display.svg"></a>
+</p>
 
 ## Setup on a Raspberry Pi 4
 

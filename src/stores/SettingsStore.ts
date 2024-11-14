@@ -100,10 +100,10 @@ export class SettingsStore {
           throw new Error('Serial service not initialized');
         }
 
-        await this.serialService.sendMessage({
-          a: OutgoingMessageType.SettingsSet,
-          p: settings
-        });
+        await this.serialService.sendCommand(
+          OutgoingMessageType.SettingsSet,
+          settings
+        );
       } catch (error) {
         this.toastStore.show(
           'Settings Update Failed',
