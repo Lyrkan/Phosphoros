@@ -19,8 +19,8 @@ const Navbar = observer(() => {
     <BootstrapNavbar expand="lg" fixed='top' className="bg-primary">
       <Container className="d-flex align-items-center gap-2">
         <BootstrapNavbar.Brand className="d-flex align-items-center gap-2">
-          <img src={logo} alt="Laser Cutter Panel" width="48" height="48" />
-          <span className="fw-bold">Laser Cutter Panel</span>
+          <img src={logo} alt="Phosphoros" width="48" height="48" />
+          <span className="fw-bold">Phosphoros</span>
         </BootstrapNavbar.Brand>
         <Nav className="me-auto gap-3">
           <LinkContainer to="/"><Nav.Link><i className="bi bi-display"></i> Status</Nav.Link></LinkContainer>

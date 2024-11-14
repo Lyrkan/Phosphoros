@@ -63,18 +63,11 @@
   <circle cx="130" cy="100" r="4" fill="#60a5fa"/>
 
   <!-- Text -->
-  <text x="59" y="160"
-        fill="#e2e8f0"
-        font-family="Arial, sans-serif"
-        font-weight="bold"
-        font-size="36"
-        text-anchor="middle"
-        letter-spacing="1">K40</text>
   <text x="100" y="175"
         fill="#e2e8f0"
         font-family="Arial, sans-serif"
         font-weight="bold"
         font-size="16"
         text-anchor="middle"
-        letter-spacing="1">CONTROL PANEL</text>
+        letter-spacing="1">Phosphoros</text>
 </svg>

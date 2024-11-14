@@ -1,4 +1,4 @@
-<h1 align="center">K40 Control Panel Display</h1>
+<h1 align="center">Phosphoros</h1>
 
 <p align="center"><i>Raspberry Pi display for the <a href="https://github.com/Lyrkan/K40-Control-Panel">K40 Control Panel</a></i></p>
 
@@ -10,9 +10,9 @@
 </p>
 
 <p align="center">
-    <a title="License" href="https://github.com/Lyrkan/K40-Control-Panel-Display/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Lyrkan/K40-Control-Panel-Display.svg"></a>
+    <a title="License" href="https://github.com/Lyrkan/Phosphoros/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Lyrkan/Phosphoros.svg"></a>
     <img alt="Build status" src="https://github.com/Lyrkan/K40-Control-Panel-Display/actions/workflows/build-main.yml/badge.svg">
-    <a title="Last release"><img src="https://img.shields.io/github/release/Lyrkan/K40-Control-Panel-Display.svg"></a>
+    <a title="Last release"><img src="https://img.shields.io/github/release/Lyrkan/Phosphoros.svg"></a>
 </p>
 
 ## Setup on a Raspberry Pi 4
@@ -39,15 +39,15 @@ $ sudo reboot
 __Download the latest release:__
 
 ```
-$ wget https://github.com/Lyrkan/K40-Control-Panel-Display/releases/download/experimental/k40-control-panel-display-1.0.0-arm64.AppImage
-$ chmod +x k40-control-panel-display-1.0.0-arm64.AppImage
-$ sudo mv k40-control-panel-display-1.0.0-arm64.AppImage /usr/local/bin/k40-control-panel-display
+$ wget https://github.com/Lyrkan/Phosphoros/releases/download/experimental/phosphoros-1.0.0-arm64.AppImage
+$ chmod +x phosphoros-1.0.0-arm64.AppImage
+$ sudo mv phosphoros-1.0.0-arm64.AppImage /usr/local/bin/phosphoros
 ```
 
 __Test that it works using frame-it:__
 
 ```
-$ frame-it k40-control-panel-display --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-wayland-ime
+$ frame-it phosphoros --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-wayland-ime
 ```
 
 __Create a user for the application:__
@@ -72,7 +72,7 @@ $ systemctl --user edit --full --force ubuntu-frame.service
 BindsTo=graphical-session.target
 [Service]
 ExecStartPre=/usr/bin/dbus-update-activation-environment --systemd WAYLAND_DISPLAY=wayland-0
-ExecStart=/snap/bin/frame-it k40-control-panel-display --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-wayland-ime
+ExecStart=/snap/bin/frame-it phosphoros --enable-features=UseOzonePlatform --ozone-platform=wayland --enable-wayland-ime
 
 
 $ systemctl --user edit --full --force user-session.target

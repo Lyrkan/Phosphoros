@@ -37,7 +37,7 @@ export default function AxisControl({
               key={increment}
               variant="primary"
               onClick={() => onMove(increment)}
-              style={{ width: '4.5rem' }}
+              style={{ width: '4.5rem', whiteSpace: 'nowrap', fontSize: '0.85rem' }}
               disabled={disabled}
             >
               {increment}
@@ -56,7 +56,7 @@ export default function AxisControl({
               key={increment}
               variant="primary"
               onClick={() => onMove(increment)}
-              style={{ width: '4.5rem' }}
+              style={{ width: '4.5rem', whiteSpace: 'nowrap', fontSize: '0.85rem' }}
               disabled={disabled}
             >
               +{increment}
