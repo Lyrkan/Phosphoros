@@ -15,10 +15,10 @@ export class SerialService implements ISerialService {
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
     // Try to connect on startup
     // This will only work if there is an already known port
-    this.connect();
+    this.connect(true);
   }
 
-  async connect() {
+  async connect(ignoreError = false) {
     try {
       // Disconnect if already connected
       if (this.store.connectionState === UartStatus.Connected) {
@@ -27,14 +27,12 @@ export class SerialService implements ISerialService {
 
       // Try to get the first available port
       const ports = await navigator.serial.getPorts();
-      console.log('Ports: ', ports);
       let port: SerialPort;
       if (ports.length > 0) {
         port = ports[0];
       } else {
         try {
           port = await navigator.serial.requestPort();
-          console.log('Connecting to port ', port.getInfo());
         } catch (e) {
           throw new Error('No compatible serial port found');
         }
@@ -54,10 +52,13 @@ export class SerialService implements ISerialService {
       // Request initial settings after successful connection
       await this.sendCommand(OutgoingMessageType.SettingsGet);
     } catch (error) {
-      this.store.setConnectionState(UartStatus.Error);
-      this.store.setError(error.message);
-      this.store.addMessage(`Error: ${error.message}`);
-      throw error; // Re-throw for retry mechanism
+      console.error('Error connecting to serial port:', error);
+      if (!ignoreError) {
+        this.store.setConnectionState(UartStatus.Error);
+        this.store.setError(error.message);
+        this.store.addMessage(`Error: ${error.message}`);
+        throw error; // Re-throw for retry mechanism
+      }
     }
   }
 
