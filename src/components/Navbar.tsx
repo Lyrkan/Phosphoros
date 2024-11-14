@@ -1,18 +1,19 @@
-import { Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap';
+import { Container, Nav, Navbar as BootstrapNavbar, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
-import { useEffect, useState } from 'react';
 import logo from '../../assets/logo-mini.svg';
+import { observer } from 'mobx-react-lite';
+import { useSerialService } from '../contexts/SerialServiceContext';
 
-export default function Navbar() {
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+const Navbar = observer(() => {
+  const serialService = useSerialService();
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const handleReconnect = async () => {
+    try {
+      await serialService.connect();
+    } catch (error) {
+      // Error handling is already done in SerialService
+    }
+  };
 
   return (
     <BootstrapNavbar expand="lg" fixed='top' className="bg-primary">
@@ -27,8 +28,16 @@ export default function Navbar() {
           <LinkContainer to="/settings/grbl"><Nav.Link><i className="bi bi-gear"/> Settings</Nav.Link></LinkContainer>
           <LinkContainer to="/debug"><Nav.Link><i className="bi bi-chevron-right"/> Debug</Nav.Link></LinkContainer>
         </Nav>
-        <span className="text-light small">{currentTime}</span>
+        <Button
+          variant="outline-warning"
+          size="sm"
+          onClick={handleReconnect}
+        >
+          Reconnect
+        </Button>
       </Container>
     </BootstrapNavbar>
   )
-}
+});
+
+export default Navbar;

@@ -21,6 +21,19 @@ const createWindow = (): void => {
     },
   });
 
+  // Automatically select first available serial port
+  session.defaultSession.on('select-serial-port', (event, portList, webContents, callback) => {
+    event.preventDefault()
+
+    // Find the first port with the name 'ttyAMA0' or 'ttyUSB0'
+    const matchingPort = (portList || []).find((port) => ['ttyAMA0', 'ttyUSB0'].includes(port.portName));
+    if (matchingPort) {
+      callback(matchingPort.portId);
+    } else {
+      callback(''); // No ports available
+    }
+  })
+
   // Set up serial port permissions
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     const allowedPermissions = ['serial'];
@@ -30,6 +43,22 @@ const createWindow = (): void => {
       callback(false);
     }
   });
+
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    if (permission === 'serial') {
+      return true
+    }
+
+    return false
+  });
+
+  session.defaultSession.setDevicePermissionHandler((details) => {
+    if (details.deviceType === 'serial') {
+      return true;
+    }
+
+    return false;
+  })
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);

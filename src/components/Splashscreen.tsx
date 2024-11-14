@@ -1,12 +1,24 @@
 import { useStore } from '../stores/RootStore';
 import { observer } from 'mobx-react-lite';
 import { UartStatus } from '../types/Stores';
+import { useSerialService } from '../contexts/SerialServiceContext';
+import { Button } from 'react-bootstrap';
 
 import splashscreen from '../../assets/splashscreen.svg';
 
 const Splashscreen = observer(() => {
-  const { serialStore } = useStore();
+  const { serialStore, settingsStore } = useStore();
+  const serialService = useSerialService();
   const hasError = serialStore.connectionState === UartStatus.Error;
+  const isConnected = serialStore.connectionState === UartStatus.Connected;
+
+  const handleConnect = async () => {
+    try {
+      await serialService.connect();
+    } catch (error) {
+      // Error handling is already done in SerialService
+    }
+  };
 
   return (
     <div
@@ -43,7 +55,38 @@ const Splashscreen = observer(() => {
           }}
         >
           <p>Connection failed: {serialStore.error}</p>
-          <p>Retrying in a few seconds...</p>
+          <Button
+            variant="primary"
+            onClick={handleConnect}
+          >
+            Retry Connection
+          </Button>
+        </div>
+      ) : isConnected && !settingsStore.isLoaded ? (
+        <div
+          style={{
+            color: 'white',
+            textAlign: 'center',
+            padding: '1rem'
+          }}
+        >
+          <p>Retrieving settings...</p>
+          <Button
+            variant="warning"
+            onClick={handleConnect}
+          >
+            Reconnect
+          </Button>
+        </div>
+      ) : settingsStore.isLoaded ? (
+        <div
+          style={{
+            color: 'white',
+            textAlign: 'center',
+            padding: '1rem'
+          }}
+        >
+          <p>Connected successfully!</p>
         </div>
       ) : (
         <div
@@ -53,7 +96,13 @@ const Splashscreen = observer(() => {
             padding: '1rem'
           }}
         >
-          <p>Loading settings...</p>
+          <p>Please connect to continue</p>
+          <Button
+            variant="primary"
+            onClick={handleConnect}
+          >
+            Connect
+          </Button>
         </div>
       )}
     </div>

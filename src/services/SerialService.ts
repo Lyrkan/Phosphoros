@@ -10,60 +10,36 @@ export class SerialService implements ISerialService {
   private decoder = new TextDecoder();
   private encoder = new TextEncoder();
   private readBuffer = '';
-  private retryTimeout: NodeJS.Timeout | null = null;
-  private readonly RETRY_INTERVAL = 10000; // 10 seconds
   private nextGrblCommandId = 1;
 
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
-    // Start connection attempt immediately
-    this.connectWithRetry();
-  }
-
-  private async connectWithRetry() {
-    try {
-      await this.connect();
-    } catch (error) {
-      console.warn('Failed to connect:', error);
-      // Schedule retry
-      this.scheduleRetry();
-    }
-  }
-
-  private scheduleRetry() {
-    if (this.retryTimeout) {
-      clearTimeout(this.retryTimeout);
-    }
-
-    this.retryTimeout = setTimeout(() => {
-      this.connectWithRetry();
-    }, this.RETRY_INTERVAL);
+    // Try to connect on startup
+    // This will only work if there is an already known port
+    this.connect();
   }
 
   async connect() {
     try {
-      // Try to get any previously authorized ports
-      const ports = await navigator.serial.getPorts() || [];
-      let port: SerialPort;
+      // Disconnect if already connected
+      if (this.store.connectionState === UartStatus.Connected) {
+        await this.disconnect();
+      }
 
+      // Try to get the first available port
+      const ports = await navigator.serial.getPorts();
+      console.log('Ports: ', ports);
+      let port: SerialPort;
       if (ports.length > 0) {
-        // Use the first available previously authorized port
         port = ports[0];
       } else {
-        // If no previously authorized ports, try with filters
-        const filters = [
-          // Common USB-to-Serial converter vendors
-          { usbVendorId: 0x1a86 }, // QinHeng Electronics
-          { usbVendorId: 0x0403 }, // FTDI
-          { usbVendorId: 0x10c4 }, // Silicon Labs
-          { usbVendorId: 0x067b }, // Prolific Technology
-        ];
-
         try {
-          port = await navigator.serial.requestPort({ filters });
+          port = await navigator.serial.requestPort();
+          console.log('Connecting to port ', port.getInfo());
         } catch (e) {
           throw new Error('No compatible serial port found');
         }
       }
+
       await port.open({ baudRate: 115200 });
 
       this.store.setPort(port);
@@ -71,13 +47,7 @@ export class SerialService implements ISerialService {
       this.store.setError(null);
 
       this.reader = port.readable?.getReader();
-      this.writer = port.writable?.getWriter();
-
-      // Clear any existing retry timeout
-      if (this.retryTimeout) {
-        clearTimeout(this.retryTimeout);
-        this.retryTimeout = null;
-      }
+      this.writer = port.writable?.getWriter()
 
       this.startReading();
 
@@ -93,11 +63,6 @@ export class SerialService implements ISerialService {
 
   async disconnect() {
     try {
-      if (this.retryTimeout) {
-        clearTimeout(this.retryTimeout);
-        this.retryTimeout = null;
-      }
-
       await this.reader?.cancel();
       await this.writer?.close();
       await this.store.port?.close();
