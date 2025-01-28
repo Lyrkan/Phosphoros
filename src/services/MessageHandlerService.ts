@@ -111,7 +111,7 @@ export class MessageHandlerService implements IMessageHandlerService {
   }
 
   private handleControllerSettings(settings: ControllerSettings): void {
-    this.store.settingsStore.updateSettings(settings);
+    this.store.settingsStore.updateSettings(settings, false);
     this.store.settingsStore.setIsLoaded(true);
   }
 

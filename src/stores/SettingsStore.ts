@@ -68,7 +68,7 @@ export class SettingsStore {
     this._isLoaded = loaded;
   });
 
-  updateSettings = action((settings: ControllerSettings) => {
+  updateSettings = action((settings: ControllerSettings, sendUpdate = true) => {
     if (settings.bed) {
       this._bed = this.deepMerge(this._bed, settings.bed);
     }
@@ -86,7 +86,9 @@ export class SettingsStore {
     }
 
     // Send only the changed settings
-    this.debouncedSendUpdate(settings);
+    if (sendUpdate) {
+      this.debouncedSendUpdate(settings);
+    }
   });
 
   private debouncedSendUpdate = (settings: Partial<ControllerSettings>) => {
