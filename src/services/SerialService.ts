@@ -122,7 +122,7 @@ export class SerialService implements ISerialService {
       const reader = this.port.readable.getReader();
 
       try {
-        while(true) {
+        for(;;) {
           const { value, done } = await reader.read();
           if (done) break;
 
