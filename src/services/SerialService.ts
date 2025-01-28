@@ -6,6 +6,10 @@ import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayloa
 
 const MAX_COMMAND_ID = 999999;
 
+export const MESSAGE_RX_PREFIX = 'RX:';
+export const MESSAGE_TX_PREFIX = 'TX:';
+export const MESSAGE_ERROR_PREFIX = 'Error:';
+
 export class SerialService implements ISerialService {
   private port: SerialPort | null = null;
   private decoder = new TextDecoder();
@@ -95,7 +99,7 @@ export class SerialService implements ISerialService {
 
       try {
         await writer.write(data);
-        this.store.addMessage(`TX: ${jsonString.trim()}`);
+        this.store.addMessage(`${MESSAGE_TX_PREFIX} ${jsonString.trim()}`);
       } catch (error) {
         this.handleError('Failed to write to serial port');
       } finally {
@@ -138,7 +142,7 @@ export class SerialService implements ISerialService {
               try {
                 const parsedMessage = JSON.parse(line);
                 this.messageHandler.handleMessage(parsedMessage);
-                this.store.addMessage(`RX: ${line}`);
+                this.store.addMessage(`${MESSAGE_RX_PREFIX} ${line}`);
               } catch (e) {
                 console.warn('Invalid JSON received:', line);
               }
@@ -209,7 +213,7 @@ export class SerialService implements ISerialService {
 
     this.store.setConnectionState(UartStatus.Error);
     this.store.setError(message);
-    this.store.addMessage(`Error: ${message}`);
+    this.store.addMessage(`${MESSAGE_ERROR_PREFIX} ${message}`);
 
     if (!ignoreError) {
       throw error;

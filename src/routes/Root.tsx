@@ -13,7 +13,7 @@ export default observer(function Root({ children }: { children?: JSX.Element }) 
     <>
       {!globalThis.isDev && showSplashscreen && <Splashscreen />}
       <Navbar/>
-      <div id="content" className="d-flex flex-grow-1">
+      <div id="content" className="d-flex flex-grow-1 mw-100">
         { children ?? <Outlet /> }
       </div>
       <ToastContainer />

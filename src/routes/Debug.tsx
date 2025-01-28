@@ -5,13 +5,15 @@ import { useStore } from "../stores/RootStore";
 import { UartStatus } from "../types/Stores";
 import CardHeader from "../components/CardHeader";
 import { useSerialService } from '../contexts/SerialServiceContext';
-import { OutgoingMessageType } from "../types/Messages";
+import { IncomingMessageType, OutgoingMessageType } from "../types/Messages";
+import { MESSAGE_RX_PREFIX, MESSAGE_TX_PREFIX, MESSAGE_ERROR_PREFIX } from "../services/SerialService";
 
 export default observer(function Debug() {
   const { serialStore } = useStore();
   const serialService = useSerialService();
   const [message, setMessage] = useState("");
   const [autoScroll, setAutoScroll] = useState(true);
+  const [hideGrblMessages, setHideGrblMessages] = useState(false);
   const scrollContainerRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -66,6 +68,28 @@ export default observer(function Debug() {
     });
   };
 
+  const getMessageType = (text: string): string => {
+    if (text.startsWith(MESSAGE_RX_PREFIX)) return 'rx';
+    if (text.startsWith(MESSAGE_TX_PREFIX)) return 'tx';
+    if (text.startsWith(MESSAGE_ERROR_PREFIX)) return 'error';
+    return 'default';
+  };
+
+  const isGrblMessage = (text: string): boolean => {
+    if (!text.startsWith(MESSAGE_RX_PREFIX)) return false;
+    try {
+      const jsonStr = text.substring(3).trim();
+      const parsed = JSON.parse(jsonStr);
+      return typeof parsed === 'object' && parsed.t === IncomingMessageType.GrblMessage;
+    } catch {
+      return false;
+    }
+  };
+
+  const filteredMessages = hideGrblMessages
+    ? serialStore.messages.filter(msg => !isGrblMessage(msg.text))
+    : serialStore.messages;
+
   return (
     <Card className="border-primary flex-grow-1 m-4 mt-0">
       <CardHeader
@@ -75,15 +99,28 @@ export default observer(function Debug() {
           text: serialStore.connectionState,
           variant: getStatusVariant()
         }}
+        extra={
+          <div className="text-white small fw-normal ms-4">
+            <Form.Check
+              type="checkbox"
+              id="hide-grbl-messages"
+              label="Hide GRBL messages"
+              checked={hideGrblMessages}
+              onChange={(e) => setHideGrblMessages(e.target.checked)}
+              className="mb-0"
+            />
+          </div>
+        }
       />
       <Card.Body
         as="pre"
         ref={scrollContainerRef}
         onScroll={handleScroll}
+        className="mb-0"
         style={{ maxHeight: '500px', overflow: 'auto' }}
       >
-        {serialStore.messages.map((msg, index) => (
-          <div key={index}>
+        {filteredMessages.map((msg, index) => (
+          <div className={`message-${getMessageType(msg.text)}`} key={index}>
             <span className="text-muted">[{formatTimestamp(msg.timestamp)}]</span> {msg.text}
           </div>
         ))}

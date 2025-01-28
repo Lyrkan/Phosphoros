@@ -38,12 +38,12 @@ export function useCommandTracking() {
 
   const sendCommand = useCallback(async (command: string, isHoming = false): Promise<void> => {
     try {
-      const response = await serialService.sendCommand(OutgoingMessageType.GrblAction, {
+      const sentCommand = await serialService.sendCommand(OutgoingMessageType.GrblAction, {
         message: command
       });
 
       // The sendCommand method in SerialService adds the ID to the message
-      const commandId = (response as OutgoingMessageBase<OutgoingMessageType.GrblAction, GrblActionPayload>).p.id;
+      const commandId = (sentCommand as OutgoingMessageBase<OutgoingMessageType.GrblAction, GrblActionPayload>).p.id;
       if (commandId === undefined) {
         return;
       }

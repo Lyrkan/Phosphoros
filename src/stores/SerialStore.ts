@@ -6,6 +6,8 @@ interface SerialMessage {
   text: string;
 }
 
+const MAX_MESSAGES = 100;
+
 export class SerialStore {
   private _connectionState: UartStatus = UartStatus.Disconnected;
   private _error: string | null = null;
@@ -51,8 +53,8 @@ export class SerialStore {
     this._messages.push({ timestamp, text });
     this._lastMessageTime = timestamp;
 
-    // Keep only the last 100 messages
-    if (this._messages.length > 100) {
+    // Keep only the last MAX_MESSAGES messages
+    if (this._messages.length > MAX_MESSAGES) {
       this._messages.shift();
     }
   });

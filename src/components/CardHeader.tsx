@@ -9,6 +9,7 @@ interface CardHeaderProps {
     variant: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info';
   };
   note?: string;
+  extra?: React.ReactNode;
 }
 
 const cardHeaderStyle = (variant: string) => ({
@@ -20,14 +21,18 @@ const cardHeaderStyle = (variant: string) => ({
   backgroundColor: variant === 'danger' ? 'var(--bs-danger-bg-subtle)' : 'var(--bs-primary)',
 });
 
-export default function CardHeader({ icon, title, status, note }: CardHeaderProps) {
+export default function CardHeader({ icon, title, status, note, extra }: CardHeaderProps) {
   return (
     <Card.Header className="border-primary text-white" style={cardHeaderStyle(status?.variant || 'primary')}>
       <i className={`bi ${icon}`}></i>
       <span>{title}</span>
+
+      { extra }
+
       {note && (
         <div className="text-white-50 small ms-auto fw-normal">({note})</div>
       )}
+
       {status && (
         <Badge bg={status.variant} className="ms-auto">
           {status.text}
