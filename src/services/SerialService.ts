@@ -4,9 +4,10 @@ import { MessageHandlerService } from './MessageHandlerService';
 import { ISerialService } from './interfaces/ISerialService';
 import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap, RelaysSetPayload } from '../types/Messages';
 
+const MAX_COMMAND_ID = 999999;
+
 export class SerialService implements ISerialService {
-  private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-  private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
+  private port: SerialPort | null = null;
   private decoder = new TextDecoder();
   private encoder = new TextEncoder();
   private readBuffer = '';
@@ -34,100 +35,125 @@ export class SerialService implements ISerialService {
         try {
           port = await navigator.serial.requestPort();
         } catch (e) {
-          throw new Error('No compatible serial port found');
+          this.handleError('No compatible serial port found', ignoreError);
+          return;
         }
       }
 
-      await port.open({ baudRate: 115200 });
+      try {
+        await port.open({ baudRate: 115200 });
+      } catch (e) {
+        // Check if the error is because the port is already open
+        if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
+          this.handleError('Failed to open serial port', ignoreError);
+          return;
+        }
+        console.warn('Serial port is already open');
+      }
 
+      this.port = port;
       this.store.setPort(port);
       this.store.setConnectionState(UartStatus.Connected);
       this.store.setError(null);
-
-      this.reader = port.readable?.getReader();
-      this.writer = port.writable?.getWriter()
 
       this.startReading();
 
       // Request initial settings after successful connection
       await this.sendCommand(OutgoingMessageType.SettingsGet);
     } catch (error) {
-      console.error('Error connecting to serial port:', error);
-      if (!ignoreError) {
-        this.store.setConnectionState(UartStatus.Error);
-        this.store.setError(error.message);
-        this.store.addMessage(`Error: ${error.message}`);
-        throw error; // Re-throw for retry mechanism
-      }
+      this.handleError('Failed to connect to serial port', ignoreError);
     }
   }
 
   async disconnect() {
-    try {
-      await this.reader?.cancel();
-      await this.writer?.close();
-      await this.store.port?.close();
+    if (!this.port) {
+      return;
+    }
 
-      this.reader = null;
-      this.writer = null;
+    try {
+      await this.port.close();
+      this.readBuffer = '';
+      this.port = null;
       this.store.setPort(null);
       this.store.setConnectionState(UartStatus.Disconnected);
       this.store.setError(null);
     } catch (error) {
-      this.store.setConnectionState(UartStatus.Error);
-      this.store.setError(error.message);
-      this.store.addMessage(`Error: ${error.message}`);
+      this.handleError('Failed to disconnect from serial port');
     }
   }
 
   async sendMessage(message: OutgoingMessage) {
-    if (!this.writer) {
-      throw new Error('Not connected to serial port');
+    if (!this.port?.writable) {
+      this.handleError('Serial port is not writable');
+      return;
     }
 
     try {
+      const writer = this.port.writable.getWriter();
       const jsonString = JSON.stringify(message) + '\n';
       const data = this.encoder.encode(jsonString);
-      await this.writer.write(data);
-      this.store.addMessage(`TX: ${jsonString.trim()}`);
+
+      try {
+        await writer.write(data);
+        this.store.addMessage(`TX: ${jsonString.trim()}`);
+      } catch (error) {
+        this.handleError('Failed to write to serial port');
+      } finally {
+        writer.releaseLock();
+      }
     } catch (error) {
-      this.store.setConnectionState(UartStatus.Error);
-      this.store.setError(error.message);
+      this.handleError('Failed to send message');
     }
   }
 
+  private getNextCommandId(): number {
+    const nextId = this.nextGrblCommandId;
+    this.nextGrblCommandId = (this.nextGrblCommandId % MAX_COMMAND_ID) + 1;
+    return nextId;
+  }
+
   private async startReading() {
-    while (this.reader) {
+    if (!this.port?.readable) {
+      this.handleError('Serial port is not readable');
+      return;
+    }
+
+    while (this.port.readable) {
+      const reader = this.port.readable.getReader();
+
       try {
-        const { value, done } = await this.reader.read();
-        if (done) {
-          break;
-        }
+        while(true) {
+          const { value, done } = await reader.read();
+          if (done) break;
 
-        this.readBuffer += this.decoder.decode(value);
-        const lines = this.readBuffer.split('\n');
+          this.readBuffer += this.decoder.decode(value);
+          const lines = this.readBuffer.split('\n');
 
-        // Keep the last incomplete line in the buffer
-        this.readBuffer = lines.pop() || '';
+          // Keep the last incomplete line in the buffer
+          this.readBuffer = lines.pop() || '';
 
-        // Process complete lines
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              const parsedMessage = JSON.parse(line);
-              this.messageHandler.handleMessage(parsedMessage);
-              this.store.addMessage(`RX: ${line}`);
-            } catch (e) {
-              console.warn('Invalid JSON received:', line);
+          // Process complete lines
+          for (const line of lines) {
+            if (line.trim()) {
+              try {
+                const parsedMessage = JSON.parse(line);
+                this.messageHandler.handleMessage(parsedMessage);
+                this.store.addMessage(`RX: ${line}`);
+              } catch (e) {
+                console.warn('Invalid JSON received:', line);
+              }
             }
           }
         }
       } catch (error) {
-        this.store.setConnectionState(UartStatus.Error);
-        this.store.setError(error.message);
-        break;
+        this.handleError('Error reading from serial port');
+      } finally {
+        this.readBuffer = '';
+        reader.releaseLock();
       }
     }
+
+    this.handleError('Serial port is not readable anymore');
   }
 
   async sendCommand<T extends OutgoingMessageType>(
@@ -142,7 +168,7 @@ export class SerialService implements ISerialService {
           a: action,
           p: {
             message: (payload as GrblActionPayload).message,
-            id: this.nextGrblCommandId++
+            id: this.getNextCommandId()
           }
         };
         break;
@@ -175,5 +201,18 @@ export class SerialService implements ISerialService {
 
     await this.sendMessage(message);
     return message;
+  }
+
+  private handleError(message: string, ignoreError = false) {
+    const error = new Error(message);
+    console.error(message, error);
+
+    this.store.setConnectionState(UartStatus.Error);
+    this.store.setError(message);
+    this.store.addMessage(`Error: ${message}`);
+
+    if (!ignoreError) {
+      throw error;
+    }
   }
 }
