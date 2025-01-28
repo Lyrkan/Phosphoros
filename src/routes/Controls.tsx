@@ -68,7 +68,7 @@ const Controls = observer(() => {
             <Col xs={3}>
               <strong>Speed:</strong>{' '}
               <span className="font-monospace" style={{ display: 'inline-block', width: '7ch', textAlign: 'right' }}>
-                {laserStore.speed.toFixed(1)}
+                {(laserStore.speed / 60).toFixed(1)}
               </span>
               {' '}mm/s
             </Col>
