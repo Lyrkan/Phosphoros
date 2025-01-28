@@ -32,7 +32,7 @@ const Controls = observer(() => {
   };
 
   const handleAxisHome = async (axis: 'X' | 'Y' | 'Z' | 'XY') => {
-    await sendCommand(`$H${axis}`, true);
+    await sendCommand(`$H=${axis}`, true);
   };
 
   const handleDisableSteppers = async () => {
