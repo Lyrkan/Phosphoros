@@ -5,9 +5,11 @@ import { useStore } from "../stores/RootStore";
 import { UartStatus } from "../types/Stores";
 import CardHeader from "../components/CardHeader";
 import { useSerialService } from '../contexts/SerialServiceContext';
-import { IncomingMessageType, OutgoingMessageType } from "../types/Messages";
+import { OutgoingMessageType } from "../types/Messages";
 import { MESSAGE_RX_PREFIX, MESSAGE_TX_PREFIX, MESSAGE_ERROR_PREFIX } from "../services/SerialService";
 import { MessageFilterId } from "../stores/DebugStore";
+
+const MAX_DISPLAYED_MESSAGES = 100;
 
 export default observer(function Debug() {
   const { serialStore, debugStore } = useStore();
@@ -15,24 +17,6 @@ export default observer(function Debug() {
   const [message, setMessage] = useState("");
   const [autoScroll, setAutoScroll] = useState(true);
   const scrollContainerRef = useRef<HTMLPreElement>(null);
-
-  // Set predicates on mount
-  useEffect(() => {
-    debugStore.setMessageFilterPredicate(MessageFilterId.StatusReport,
-      (text: string) => isMessageOfType(text, IncomingMessageType.StatusReport));
-    debugStore.setMessageFilterPredicate(MessageFilterId.GrblReport,
-      (text: string) => isMessageOfType(text, IncomingMessageType.GrblReport));
-    debugStore.setMessageFilterPredicate(MessageFilterId.GrblMessage,
-      (text: string) => isMessageOfType(text, IncomingMessageType.GrblMessage));
-    debugStore.setMessageFilterPredicate(MessageFilterId.GrblAck,
-      (text: string) => isMessageOfType(text, IncomingMessageType.GrblAck));
-    debugStore.setMessageFilterPredicate(MessageFilterId.Settings,
-      (text: string) => isMessageOfType(text, IncomingMessageType.ControllerSettings));
-    debugStore.setMessageFilterPredicate(MessageFilterId.Outgoing,
-      (text: string) => text.startsWith(MESSAGE_TX_PREFIX));
-    debugStore.setMessageFilterPredicate(MessageFilterId.Error,
-      (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX));
-  }, [debugStore]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -93,24 +77,13 @@ export default observer(function Debug() {
     return 'default';
   };
 
-  const isMessageOfType = (text: string, type: IncomingMessageType): boolean => {
-    if (!text.startsWith(MESSAGE_RX_PREFIX)) return false;
-    try {
-      const jsonStr = text.substring(3).trim();
-      const parsed = JSON.parse(jsonStr);
-      return typeof parsed === 'object' && parsed.t === type;
-    } catch {
-      return false;
-    }
-  };
-
   const handleFilterChange = (filterId: MessageFilterId, checked: boolean) => {
     debugStore.setMessageFilterEnabled(filterId, checked);
   };
 
   const filteredMessages = serialStore.messages.filter(msg =>
     debugStore.messageFilters.some(filter => filter.isEnabled && filter.predicate(msg.text))
-  );
+  ).slice(-MAX_DISPLAYED_MESSAGES);
 
   const getActiveFiltersLabel = () => {
     const activeCount = debugStore.messageFilters.filter(f => f.isEnabled).length;

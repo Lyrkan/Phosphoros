@@ -1,4 +1,6 @@
 import { makeAutoObservable } from 'mobx';
+import { IncomingMessageType } from '../types/Messages';
+import { MESSAGE_RX_PREFIX, MESSAGE_TX_PREFIX, MESSAGE_ERROR_PREFIX } from '../services/SerialService';
 
 export enum MessageFilterId {
   StatusReport = 'rx-status',
@@ -20,6 +22,17 @@ export interface MessageFilter {
 export class DebugStore {
   private _messageFilters: MessageFilter[];
 
+  private isMessageOfType(text: string, type: IncomingMessageType): boolean {
+    if (!text.startsWith(MESSAGE_RX_PREFIX)) return false;
+    try {
+      const jsonStr = text.substring(3).trim();
+      const parsed = JSON.parse(jsonStr);
+      return typeof parsed === 'object' && parsed.t === type;
+    } catch {
+      return false;
+    }
+  }
+
   constructor() {
     makeAutoObservable(this);
 
@@ -27,44 +40,44 @@ export class DebugStore {
       {
         id: MessageFilterId.StatusReport,
         label: 'Status Reports',
-        isEnabled: true,
-        predicate: () => false, // Will be set in Debug.tsx
+        isEnabled: false,
+        predicate: (text: string) => this.isMessageOfType(text, IncomingMessageType.StatusReport),
       },
       {
         id: MessageFilterId.GrblReport,
         label: 'GRBL Reports',
-        isEnabled: true,
-        predicate: () => false,
+        isEnabled: false,
+        predicate: (text: string) => this.isMessageOfType(text, IncomingMessageType.GrblReport),
       },
       {
         id: MessageFilterId.GrblMessage,
         label: 'GRBL Messages',
         isEnabled: true,
-        predicate: () => false,
+        predicate: (text: string) => this.isMessageOfType(text, IncomingMessageType.GrblMessage),
       },
       {
         id: MessageFilterId.GrblAck,
         label: 'GRBL Acks',
         isEnabled: true,
-        predicate: () => false,
+        predicate: (text: string) => this.isMessageOfType(text, IncomingMessageType.GrblAck),
       },
       {
         id: MessageFilterId.Settings,
         label: 'Settings Updates',
         isEnabled: true,
-        predicate: () => false,
+        predicate: (text: string) => this.isMessageOfType(text, IncomingMessageType.ControllerSettings),
       },
       {
         id: MessageFilterId.Outgoing,
         label: 'Outgoing Messages',
         isEnabled: true,
-        predicate: () => false,
+        predicate: (text: string) => text.startsWith(MESSAGE_TX_PREFIX),
       },
       {
         id: MessageFilterId.Error,
         label: 'Errors',
         isEnabled: true,
-        predicate: () => false,
+        predicate: (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX),
       },
     ];
   }
