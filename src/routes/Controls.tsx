@@ -140,7 +140,7 @@ const Controls = observer(() => {
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
-                onClick={() => handleRelayToggle('light', !laserStore.lights)}
+                onClick={() => handleRelayToggle('lights', !laserStore.lights)}
                 className="w-100 h-100"
                 active={laserStore.lights === true}
               >

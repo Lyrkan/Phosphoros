@@ -36,7 +36,7 @@ export interface StatusReportPayload {
   relays: {
     interlock: boolean;
     alarm: boolean;
-    light: boolean;
+    lights: boolean;
     beam_preview: boolean;
     air_assist: boolean;
   };
@@ -95,7 +95,7 @@ export interface GrblActionPayload {
 export interface RelaysSetPayload {
   interlock?: boolean;
   air_assist?: boolean;
-  light?: boolean;
+  lights?: boolean;
   beam_preview?: boolean;
 }
 

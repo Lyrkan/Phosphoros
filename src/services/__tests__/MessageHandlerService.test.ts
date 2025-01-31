@@ -38,7 +38,7 @@ describe('MessageHandlerService', () => {
           relays: {
             interlock: true,
             alarm: false,
-            light: true,
+            lights: true,
             beam_preview: false,
             air_assist: false
           },
@@ -72,7 +72,7 @@ describe('MessageHandlerService', () => {
           relays: {
             interlock: true,
             alarm: false,
-            light: true,
+            lights: true,
             beam_preview: false,
             air_assist: true
           },
@@ -106,7 +106,7 @@ describe('MessageHandlerService', () => {
           relays: {
             interlock: false,
             alarm: false,
-            light: false,
+            lights: false,
             beam_preview: false,
             air_assist: false
           },
@@ -138,7 +138,7 @@ describe('MessageHandlerService', () => {
           relays: {
             interlock: false,
             alarm: false,
-            light: false,
+            lights: false,
             beam_preview: false,
             air_assist: false
           },
