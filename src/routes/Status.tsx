@@ -78,6 +78,7 @@ const Status = observer(() => {
         LaserState.DoorRestart,
         LaserState.Check,
         LaserState.Run,
+        LaserState.Home,
         LaserState.Unknown
       ],
       [LaserState.Idle, LaserState.Jog]
