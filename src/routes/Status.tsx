@@ -3,10 +3,13 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "../stores/RootStore";
 import CardHeader from "../components/CardHeader";
 import { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus } from "../types/Stores";
-import { ReactElement, useMemo } from 'react';
+import { ReactElement, useMemo, useState } from 'react';
+import { CoolingMetric } from "../stores/CoolingHistoryStore";
+import CoolingHistoryModal from "../components/CoolingHistoryModal";
 
 const Status = observer(() => {
   const { laserStore, lidsStore, coolingStore, systemStore, serialStore, settingsStore } = useStore();
+  const [selectedMetric, setSelectedMetric] = useState<CoolingMetric | null>(null);
 
   const gridStyle = {
     gridAutoRows: '1fr'
@@ -28,6 +31,17 @@ const Status = observer(() => {
     color: 'white',
     zIndex: 1,
     fontSize: '.9em',
+  };
+
+  const searchIconStyle = {
+    position: 'absolute' as const,
+    right: '.5rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    color: 'var(--bs-body-color)',
+    opacity: 0.5,
+    fontSize: '1rem'
   };
 
   const getProgressBarStyle = (variant: string) => ({
@@ -226,6 +240,10 @@ const Status = observer(() => {
     settingsStore.probes.cooling?.temp?.max
   ]);
 
+  const handleProgressBarClick = (metric: CoolingMetric) => {
+    setSelectedMetric(metric);
+  };
+
   return (
     <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
       <Card className="border-primary g-col-6">
@@ -276,7 +294,7 @@ const Status = observer(() => {
           <Row className="mb-3 align-items-center">
             <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
             <Col xs={8}>
-              <div style={progressBarContainerStyle}>
+              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputFlow)} role="button">
                 <div style={progressLabelStyle}>
                   {coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow.toFixed(1)} L/min` : 'Unknown'}
                 </div>
@@ -287,13 +305,14 @@ const Status = observer(() => {
                   now={coolingStore.inputFlow}
                   variant={progressBarVariants.inputFlow}
                 />
+                <i className="bi bi-search" style={searchIconStyle}></i>
               </div>
             </Col>
           </Row>
           <Row className="mb-3 align-items-center">
             <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
             <Col xs={8}>
-              <div style={progressBarContainerStyle}>
+              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputTemperature)} role="button">
                 <div style={progressLabelStyle}>
                   {coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature.toFixed(1)}°C` : 'Unknown'}
                 </div>
@@ -304,13 +323,14 @@ const Status = observer(() => {
                   now={coolingStore.inputTemperature}
                   variant={progressBarVariants.inputTemp}
                 />
+                <i className="bi bi-search" style={searchIconStyle}></i>
               </div>
             </Col>
           </Row>
           <Row className="mb-3 align-items-center">
             <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
             <Col xs={8}>
-              <div style={progressBarContainerStyle}>
+              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputFlow)} role="button">
                 <div style={progressLabelStyle}>
                   {coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow.toFixed(1)} L/min` : 'Unknown'}
                 </div>
@@ -321,13 +341,14 @@ const Status = observer(() => {
                   now={coolingStore.outputFlow}
                   variant={progressBarVariants.outputFlow}
                 />
+                <i className="bi bi-search" style={searchIconStyle}></i>
               </div>
             </Col>
           </Row>
           <Row className="align-items-center">
             <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
             <Col xs={8}>
-              <div style={progressBarContainerStyle}>
+              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputTemperature)} role="button">
                 <div style={progressLabelStyle}>
                   {coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature.toFixed(1)}°C` : 'Unknown'}
                 </div>
@@ -338,6 +359,7 @@ const Status = observer(() => {
                   now={coolingStore.outputTemperature}
                   variant={progressBarVariants.outputTemp}
                 />
+                <i className="bi bi-search" style={searchIconStyle}></i>
               </div>
             </Col>
           </Row>
@@ -351,7 +373,7 @@ const Status = observer(() => {
         />
         <Card.Body>
           <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Flame Sensor Status:</strong>
+            <strong className="text-nowrap">Flame Sensor:</strong>
             <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
             {getFlameSensorBadge(systemStore.flameSensorStatus)}
           </p>
@@ -374,6 +396,14 @@ const Status = observer(() => {
           </p>
         </Card.Body>
       </Card>
+
+      {selectedMetric && (
+        <CoolingHistoryModal
+          show={true}
+          onHide={() => setSelectedMetric(null)}
+          metric={selectedMetric}
+        />
+      )}
     </div>
   );
 });

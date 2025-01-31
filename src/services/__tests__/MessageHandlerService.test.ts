@@ -14,6 +14,7 @@ describe('MessageHandlerService', () => {
 
   afterEach(() => {
     rootStore.settingsStore.cleanup();
+    rootStore.coolingHistoryStore.stopTracking();
   });
 
   describe('handleStatusReport', () => {

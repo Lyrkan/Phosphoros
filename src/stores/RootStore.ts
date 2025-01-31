@@ -6,6 +6,7 @@ import { LidsStore } from "./LidsStore";
 import { CoolingStore } from "./CoolingStore";
 import { SystemStore } from "./SystemStore";
 import { ToastStore } from "./ToastStore";
+import { CoolingHistoryStore } from "./CoolingHistoryStore";
 import { DevSimulationService } from '../services/DevSimulationService';
 
 export class RootStore {
@@ -16,6 +17,7 @@ export class RootStore {
   readonly serialStore: SerialStore;
   readonly settingsStore: SettingsStore;
   readonly toastStore: ToastStore;
+  readonly coolingHistoryStore: CoolingHistoryStore;
 
   constructor() {
     this.laserStore = new LaserStore();
@@ -25,10 +27,14 @@ export class RootStore {
     this.serialStore = new SerialStore();
     this.toastStore = new ToastStore();
     this.settingsStore = new SettingsStore(this.toastStore);
+    this.coolingHistoryStore = new CoolingHistoryStore(this);
 
     if (globalThis.isDev) {
       (new DevSimulationService(this)).start();
     }
+
+    // Start tracking cooling metrics history
+    this.coolingHistoryStore.startTracking();
   }
 }
 
