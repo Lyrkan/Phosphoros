@@ -16,6 +16,7 @@ export class SerialService implements ISerialService {
   private encoder = new TextEncoder();
   private readBuffer = '';
   private nextGrblCommandId = 1;
+  private cancelRead = false;
 
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
     // Try to connect on startup
@@ -70,20 +71,13 @@ export class SerialService implements ISerialService {
   }
 
   async disconnect() {
-    if (!this.port) {
+    if (!this.port?.readable) {
       return;
     }
 
-    try {
-      await this.port.close();
-      this.readBuffer = '';
-      this.port = null;
-      this.store.setPort(null);
-      this.store.setConnectionState(UartStatus.Disconnected);
-      this.store.setError(null);
-    } catch (error) {
-      this.handleError('Failed to disconnect from serial port');
-    }
+    const reader = this.port.readable.getReader();
+    this.cancelRead = true;
+    reader.cancel();
   }
 
   async sendMessage(message: OutgoingMessage) {
@@ -122,7 +116,8 @@ export class SerialService implements ISerialService {
       return;
     }
 
-    while (this.port.readable) {
+    this.cancelRead = false;
+    while (this.port.readable && !this.cancelRead) {
       const reader = this.port.readable.getReader();
 
       try {
@@ -149,6 +144,7 @@ export class SerialService implements ISerialService {
             }
           }
         }
+        this.store.setError(null);
       } catch (error) {
         this.handleError('Error reading from serial port');
       } finally {
@@ -157,7 +153,11 @@ export class SerialService implements ISerialService {
       }
     }
 
-    this.handleError('Serial port is not readable anymore');
+    await this.port.close();
+
+    this.port = null;
+    this.store.setPort(null);
+    this.store.setConnectionState(UartStatus.Disconnected);
   }
 
   async sendCommand<T extends OutgoingMessageType>(
