@@ -7,64 +7,32 @@ import CardHeader from "../components/CardHeader";
 import { useSerialService } from '../contexts/SerialServiceContext';
 import { IncomingMessageType, OutgoingMessageType } from "../types/Messages";
 import { MESSAGE_RX_PREFIX, MESSAGE_TX_PREFIX, MESSAGE_ERROR_PREFIX } from "../services/SerialService";
-
-interface MessageFilter {
-  id: string;
-  label: string;
-  isEnabled: boolean;
-  predicate: (text: string) => boolean;
-}
+import { MessageFilterId } from "../stores/DebugStore";
 
 export default observer(function Debug() {
-  const { serialStore } = useStore();
+  const { serialStore, debugStore } = useStore();
   const serialService = useSerialService();
   const [message, setMessage] = useState("");
   const [autoScroll, setAutoScroll] = useState(true);
-  const [messageFilters, setMessageFilters] = useState<MessageFilter[]>([
-    {
-      id: 'rx-status',
-      label: 'Status Reports',
-      isEnabled: true,
-      predicate: (text: string) => isMessageOfType(text, IncomingMessageType.StatusReport),
-    },
-    {
-      id: 'rx-grbl-report',
-      label: 'GRBL Reports',
-      isEnabled: true,
-      predicate: (text: string) => isMessageOfType(text, IncomingMessageType.GrblReport),
-    },
-    {
-      id: 'rx-grbl-message',
-      label: 'GRBL Messages',
-      isEnabled: true,
-      predicate: (text: string) => isMessageOfType(text, IncomingMessageType.GrblMessage),
-    },
-    {
-      id: 'rx-grbl-ack',
-      label: 'GRBL Acks',
-      isEnabled: true,
-      predicate: (text: string) => isMessageOfType(text, IncomingMessageType.GrblAck),
-    },
-    {
-      id: 'rx-settings',
-      label: 'Settings Updates',
-      isEnabled: true,
-      predicate: (text: string) => isMessageOfType(text, IncomingMessageType.ControllerSettings),
-    },
-    {
-      id: 'tx',
-      label: 'Outgoing Messages',
-      isEnabled: true,
-      predicate: (text: string) => text.startsWith(MESSAGE_TX_PREFIX),
-    },
-    {
-      id: 'error',
-      label: 'Errors',
-      isEnabled: true,
-      predicate: (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX),
-    },
-  ]);
   const scrollContainerRef = useRef<HTMLPreElement>(null);
+
+  // Set predicates on mount
+  useEffect(() => {
+    debugStore.setMessageFilterPredicate(MessageFilterId.StatusReport,
+      (text: string) => isMessageOfType(text, IncomingMessageType.StatusReport));
+    debugStore.setMessageFilterPredicate(MessageFilterId.GrblReport,
+      (text: string) => isMessageOfType(text, IncomingMessageType.GrblReport));
+    debugStore.setMessageFilterPredicate(MessageFilterId.GrblMessage,
+      (text: string) => isMessageOfType(text, IncomingMessageType.GrblMessage));
+    debugStore.setMessageFilterPredicate(MessageFilterId.GrblAck,
+      (text: string) => isMessageOfType(text, IncomingMessageType.GrblAck));
+    debugStore.setMessageFilterPredicate(MessageFilterId.Settings,
+      (text: string) => isMessageOfType(text, IncomingMessageType.ControllerSettings));
+    debugStore.setMessageFilterPredicate(MessageFilterId.Outgoing,
+      (text: string) => text.startsWith(MESSAGE_TX_PREFIX));
+    debugStore.setMessageFilterPredicate(MessageFilterId.Error,
+      (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX));
+  }, [debugStore]);
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
@@ -136,21 +104,17 @@ export default observer(function Debug() {
     }
   };
 
-  const handleFilterChange = (filterId: string, checked: boolean) => {
-    setMessageFilters(filters =>
-      filters.map(filter =>
-        filter.id === filterId ? { ...filter, isEnabled: checked } : filter
-      )
-    );
+  const handleFilterChange = (filterId: MessageFilterId, checked: boolean) => {
+    debugStore.setMessageFilterEnabled(filterId, checked);
   };
 
   const filteredMessages = serialStore.messages.filter(msg =>
-    messageFilters.some(filter => filter.isEnabled && filter.predicate(msg.text))
+    debugStore.messageFilters.some(filter => filter.isEnabled && filter.predicate(msg.text))
   );
 
   const getActiveFiltersLabel = () => {
-    const activeCount = messageFilters.filter(f => f.isEnabled).length;
-    const totalCount = messageFilters.length;
+    const activeCount = debugStore.messageFilters.filter(f => f.isEnabled).length;
+    const totalCount = debugStore.messageFilters.length;
     return activeCount === totalCount ? 'All' : `${activeCount}/${totalCount}`;
   };
 
@@ -177,7 +141,7 @@ export default observer(function Debug() {
                 Filters ({getActiveFiltersLabel()})
               </Dropdown.Toggle>
               <Dropdown.Menu className="p-2" style={{ minWidth: '200px' }}>
-                {messageFilters.map(filter => (
+                {debugStore.messageFilters.map(filter => (
                   <Form.Check
                     key={filter.id}
                     type="checkbox"
@@ -194,9 +158,7 @@ export default observer(function Debug() {
                     size="sm"
                     variant="outline-secondary"
                     className="w-50"
-                    onClick={() => setMessageFilters(filters =>
-                      filters.map(filter => ({ ...filter, isEnabled: true }))
-                    )}
+                    onClick={() => debugStore.setAllMessageFiltersEnabled(true)}
                   >
                     Select All
                   </Button>
@@ -204,9 +166,7 @@ export default observer(function Debug() {
                     size="sm"
                     variant="outline-secondary"
                     className="w-50"
-                    onClick={() => setMessageFilters(filters =>
-                      filters.map(filter => ({ ...filter, isEnabled: false }))
-                    )}
+                    onClick={() => debugStore.setAllMessageFiltersEnabled(false)}
                   >
                     Clear All
                   </Button>

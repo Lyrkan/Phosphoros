@@ -8,6 +8,7 @@ import { SystemStore } from "./SystemStore";
 import { ToastStore } from "./ToastStore";
 import { CoolingHistoryStore } from "./CoolingHistoryStore";
 import { DevSimulationService } from '../services/DevSimulationService';
+import { DebugStore } from './DebugStore';
 
 export class RootStore {
   readonly laserStore: LaserStore;
@@ -18,6 +19,7 @@ export class RootStore {
   readonly settingsStore: SettingsStore;
   readonly toastStore: ToastStore;
   readonly coolingHistoryStore: CoolingHistoryStore;
+  public debugStore: DebugStore;
 
   constructor() {
     this.laserStore = new LaserStore();
@@ -28,6 +30,7 @@ export class RootStore {
     this.toastStore = new ToastStore();
     this.settingsStore = new SettingsStore(this.toastStore);
     this.coolingHistoryStore = new CoolingHistoryStore(this);
+    this.debugStore = new DebugStore();
 
     if (globalThis.isDev) {
       (new DevSimulationService(this)).start();
