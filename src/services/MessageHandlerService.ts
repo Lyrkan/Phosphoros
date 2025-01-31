@@ -68,6 +68,7 @@ export class MessageHandlerService implements IMessageHandlerService {
     laserStore.setInterlock(payload.relays.interlock);
     laserStore.setLights(payload.relays.light);
     laserStore.setBeamPreview(payload.relays.beam_preview);
+    laserStore.setAirAssist(payload.relays.air_assist);
   }
 
   private handleGrblReport(payload: GrblReportPayload): void {

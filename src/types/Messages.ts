@@ -38,6 +38,7 @@ export interface StatusReportPayload {
     alarm: boolean;
     light: boolean;
     beam_preview: boolean;
+    air_assist: boolean;
   };
   uart: number;
 }
@@ -67,6 +68,12 @@ export interface GrblReportPayload {
     r: boolean;
     s: boolean;
   };
+  active_accessories?: {
+    spindle_cw: boolean;
+    spindle_ccw: boolean;
+    flood_coolant: boolean;
+    mist_coolant: boolean;
+  }
 }
 
 export interface GrblMessagePayload {

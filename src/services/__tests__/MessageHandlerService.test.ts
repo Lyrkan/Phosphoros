@@ -39,7 +39,8 @@ describe('MessageHandlerService', () => {
             interlock: true,
             alarm: false,
             light: true,
-            beam_preview: false
+            beam_preview: false,
+            air_assist: false
           },
           uart: 1
         }
@@ -49,6 +50,40 @@ describe('MessageHandlerService', () => {
       expect(rootStore.coolingStore.outputFlow).toBe(3.0);
       expect(rootStore.coolingStore.inputTemperature).toBe(25.5);
       expect(rootStore.coolingStore.outputTemperature).toBe(28.0);
+    });
+
+    it('should update relays values', () => {
+      messageHandler.handleMessage({
+        t: IncomingMessageType.StatusReport,
+        p: {
+          sensors: {
+            cooling: {
+              flow: { in: 2.5, out: 3.0 },
+              temp: { in: 25.5, out: 28.0 }
+            },
+            lids: { front: 'closed', back: 'closed' },
+            flame_sensor: 'ok'
+          },
+          alerts: {
+            cooling: false,
+            lids: false,
+            flame_sensor: false
+          },
+          relays: {
+            interlock: true,
+            alarm: false,
+            light: true,
+            beam_preview: false,
+            air_assist: true
+          },
+          uart: 1
+        }
+      });
+
+      expect(rootStore.laserStore.interlock).toBe(true);
+      expect(rootStore.laserStore.lights).toBe(true);
+      expect(rootStore.laserStore.beamPreview).toBe(false);
+      expect(rootStore.laserStore.airAssist).toBe(true);
     });
 
     it('should update lid states correctly', () => {
@@ -72,7 +107,8 @@ describe('MessageHandlerService', () => {
             interlock: false,
             alarm: false,
             light: false,
-            beam_preview: false
+            beam_preview: false,
+            air_assist: false
           },
           uart: 1
         }
@@ -103,7 +139,8 @@ describe('MessageHandlerService', () => {
             interlock: false,
             alarm: false,
             light: false,
-            beam_preview: false
+            beam_preview: false,
+            air_assist: false
           },
           uart: 1
         }
@@ -123,7 +160,23 @@ describe('MessageHandlerService', () => {
           w_pos: { x: 10, y: 20, z: 30 },
           m_pos: { x: 100, y: 200, z: 300 },
           wco: { x: 90, y: 180, z: 270 },
-          feed: { rate: 1000, spindle_speed: 0 }
+          feed: { rate: 1000, spindle_speed: 0 },
+          active_pins: {
+            x: false,
+            y: false,
+            z: false,
+            p: false,
+            d: false,
+            h: false,
+            r: false,
+            s: false
+          },
+          active_accessories: {
+            spindle_cw: false,
+            spindle_ccw: false,
+            flood_coolant: false,
+            mist_coolant: false
+          }
         }
       });
 

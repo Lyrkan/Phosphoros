@@ -87,6 +87,10 @@ export class LaserStore {
     this._beamPreview = value;
   });
 
+  setAirAssist = action((value: boolean) => {
+    this._airAssist = value;
+  });
+
   setPosition = action((type: PositionType, position: Position) => {
     switch (type) {
       case PositionType.Work:
