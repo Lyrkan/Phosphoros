@@ -5,6 +5,7 @@ import { ISerialService } from './interfaces/ISerialService';
 import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap, RelaysSetPayload } from '../types/Messages';
 
 const MAX_COMMAND_ID = 999999;
+const DISCONNECT_TIMEOUT_MS = 5000;
 
 export const MESSAGE_RX_PREFIX = 'RX:';
 export const MESSAGE_TX_PREFIX = 'TX:';
@@ -17,7 +18,8 @@ export class SerialService implements ISerialService {
   private readBuffer = '';
   private nextGrblCommandId = 1;
   private cancelRead = false;
-
+  private disconnectPromise: Promise<void> | null = null;
+  private disconnectResolve: (() => void) | null = null;
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
     // Try to connect on startup
     // This will only work if there is an already known port
@@ -75,9 +77,46 @@ export class SerialService implements ISerialService {
       return;
     }
 
+    // Create a new promise that will resolve when the port is fully closed
+    if (!this.disconnectPromise) {
+      this.disconnectPromise = Promise.race([
+        new Promise<void>((resolve) => {
+          this.disconnectResolve = resolve;
+        }),
+        new Promise<void>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Disconnect timeout'));
+          }, DISCONNECT_TIMEOUT_MS);
+        })
+      ]);
+    }
+
     const reader = this.port.readable.getReader();
     this.cancelRead = true;
     reader.cancel();
+
+    try {
+      // Wait for the port to be fully closed
+      await this.disconnectPromise;
+    } catch (error) {
+      // If we timeout, force close the port
+      if (this.port) {
+        try {
+          await this.port.close();
+        } catch (e) {
+          console.warn('Failed to force close port:', e);
+        }
+
+        this.port = null;
+        this.store.setPort(null);
+        this.store.setConnectionState(UartStatus.Disconnected);
+      }
+
+      throw error;
+    } finally {
+      this.disconnectPromise = null;
+      this.disconnectResolve = null;
+    }
   }
 
   async sendMessage(message: OutgoingMessage) {
@@ -158,6 +197,11 @@ export class SerialService implements ISerialService {
     this.port = null;
     this.store.setPort(null);
     this.store.setConnectionState(UartStatus.Disconnected);
+
+    // Resolve the disconnect promise if it exists
+    if (this.disconnectResolve) {
+      this.disconnectResolve();
+    }
   }
 
   async sendCommand<T extends OutgoingMessageType>(

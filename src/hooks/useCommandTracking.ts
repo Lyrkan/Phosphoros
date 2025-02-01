@@ -3,6 +3,8 @@ import { useStore } from '../stores/RootStore';
 import { GrblActionPayload, OutgoingMessageBase, OutgoingMessageType } from '../types/Messages';
 import { useSerialService } from '../contexts/SerialServiceContext';
 
+const TIMEOUT_BUFFER_MS = 1000; // Add 1s to the controller timeout
+
 interface CommandState {
   [key: number]: {
     timeout: NodeJS.Timeout;
@@ -15,8 +17,6 @@ export function useCommandTrackingState() {
   const serialService = useSerialService();
   const pendingCommandsRef = useRef<CommandState>({} as CommandState);
   const [hasPendingCommands, setHasPendingCommands] = useState(false);
-
-  const TIMEOUT_BUFFER_MS = 1000; // Add 1s to the controller timeout
 
   const updateHasPendingCommands = useCallback(() => {
     const count = Object.keys(pendingCommandsRef.current).length;
