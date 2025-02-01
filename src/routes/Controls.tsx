@@ -131,7 +131,7 @@ const Controls = observer(() => {
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('interlock', !laserStore.interlock)}
-                className="w-100 h-100"
+                className="w-100 h-100 toggle-button"
                 active={laserStore.interlock === true}
               >
                 <i className="bi bi-shield-lock"></i> Interlock
@@ -141,7 +141,7 @@ const Controls = observer(() => {
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('lights', !laserStore.lights)}
-                className="w-100 h-100"
+                className="w-100 h-100 toggle-button"
                 active={laserStore.lights === true}
               >
                 <i className="bi bi-lightbulb"></i> Lights
@@ -151,7 +151,7 @@ const Controls = observer(() => {
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('air_assist', !laserStore.airAssist)}
-                className="w-100 h-100"
+                className="w-100 h-100 toggle-button"
                 active={laserStore.airAssist === true}
               >
                 <i className="bi bi-wind"></i> Air Assist
@@ -161,7 +161,7 @@ const Controls = observer(() => {
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('beam_preview', !laserStore.beamPreview)}
-                className="w-100 h-100"
+                className="w-100 h-100 toggle-button"
                 active={laserStore.beamPreview === true}
               >
                 <i className="bi bi-eye"></i> Beam Preview

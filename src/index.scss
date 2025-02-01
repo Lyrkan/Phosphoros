@@ -24,3 +24,10 @@ body {
 .sticky-top {
   top: $body-padding-top;
 }
+
+.toggle-button:focus:not(:active) {
+  background-color: var(--bs-btn-bg) !important;
+  border-color: var(--bs-btn-border-color) !important;
+  color: var(--bs-btn-color) !important;
+  box-shadow: none !important;
+}

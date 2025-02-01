@@ -20,6 +20,7 @@ export class SerialService implements ISerialService {
   private cancelRead = false;
   private disconnectPromise: Promise<void> | null = null;
   private disconnectResolve: (() => void) | null = null;
+
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
     // Try to connect on startup
     // This will only work if there is an already known port
