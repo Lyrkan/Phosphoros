@@ -3,7 +3,8 @@ import { useStore } from '../stores/RootStore';
 import { MessageHandlerService } from '../services/MessageHandlerService';
 import { SerialService } from '../services/SerialService';
 import { SerialServiceContextProvider } from '../contexts/SerialServiceContext';
-import { useCommandTracking } from '../hooks/useCommandTracking';
+import { useCommandTrackingState } from '../hooks/useCommandTracking';
+import { CommandTrackingProvider } from '../contexts/CommandTrackingContext';
 
 function SerialServiceComponent({
   messageHandler,
@@ -14,16 +15,32 @@ function SerialServiceComponent({
   serialService: SerialService;
   children: ReactNode;
 }) {
-  const commandTracking = useCommandTracking();
+  return (
+    <SerialServiceContextProvider value={serialService}>
+      <CommandTrackingInitializer messageHandler={messageHandler}>
+        {children}
+      </CommandTrackingInitializer>
+    </SerialServiceContextProvider>
+  );
+}
+
+function CommandTrackingInitializer({
+  messageHandler,
+  children
+}: {
+  messageHandler: MessageHandlerService;
+  children: ReactNode;
+}) {
+  const commandTracking = useCommandTrackingState();
 
   useEffect(() => {
     messageHandler.setCommandTracking(commandTracking);
   }, [messageHandler, commandTracking]);
 
   return (
-    <SerialServiceContextProvider value={serialService}>
+    <CommandTrackingProvider value={commandTracking}>
       {children}
-    </SerialServiceContextProvider>
+    </CommandTrackingProvider>
   );
 }
 

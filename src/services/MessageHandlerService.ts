@@ -3,15 +3,15 @@ import { ControllerSettings } from '../types/Settings';
 import { RootStore } from '../stores/RootStore';
 import { LaserState, LidState, FlameSensorStatus, UartStatus , PositionType, AlarmState } from '../types/Stores';
 import { IMessageHandlerService } from './interfaces/IMessageHandlerService';
-import { useCommandTracking } from '../hooks/useCommandTracking';
+import { useCommandTrackingState } from '../hooks/useCommandTracking';
 
 export class MessageHandlerService implements IMessageHandlerService {
-  private commandTracking?: ReturnType<typeof useCommandTracking>;
+  private commandTracking?: ReturnType<typeof useCommandTrackingState>;
 
   constructor(private store: RootStore) {
   }
 
-  setCommandTracking(commandTracking: ReturnType<typeof useCommandTracking>) {
+  setCommandTracking(commandTracking: ReturnType<typeof useCommandTrackingState>) {
     this.commandTracking = commandTracking;
   }
 

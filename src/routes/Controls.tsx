@@ -4,7 +4,7 @@ import { useState } from "react";
 import CardHeader from "../components/CardHeader";
 import AxisControl from "../components/AxisControl";
 import { useStore } from "../stores/RootStore";
-import { useCommandTracking } from '../hooks/useCommandTracking';
+import { useCommandTracking } from '../contexts/CommandTrackingContext';
 import { useSerialService } from '../contexts/SerialServiceContext';
 import { OutgoingMessageType, RelaysSetPayload } from '../types/Messages';
 import { LaserState } from "../types/Stores";

@@ -10,7 +10,7 @@ interface CommandState {
   };
 }
 
-export function useCommandTracking() {
+export function useCommandTrackingState() {
   const { settingsStore, toastStore, serialStore } = useStore();
   const serialService = useSerialService();
   const pendingCommandsRef = useRef<CommandState>({} as CommandState);
