@@ -9,8 +9,7 @@ export enum MessageFilterId {
   GrblAck = 'rx-grbl-ack',
   Settings = 'rx-settings',
   Outgoing = 'tx',
-  Error = 'error',
-  Debug = 'debug'
+  Error = 'error'
 }
 
 export interface MessageFilter {
@@ -79,12 +78,6 @@ export class DebugStore {
         label: 'Errors',
         isEnabled: true,
         predicate: (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX),
-      },
-      {
-        id: MessageFilterId.Debug,
-        label: 'Debug Messages',
-        isEnabled: true,
-        predicate: (text: string) => text.startsWith('[DEBUG]'),
       }
     ];
   }
