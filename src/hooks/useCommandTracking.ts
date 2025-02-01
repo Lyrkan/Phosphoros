@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useStore } from '../stores/RootStore';
 import { GrblActionPayload, OutgoingMessageBase, OutgoingMessageType } from '../types/Messages';
 import { useSerialService } from '../contexts/SerialServiceContext';
@@ -13,21 +13,33 @@ interface CommandState {
 export function useCommandTracking() {
   const { settingsStore, toastStore } = useStore();
   const serialService = useSerialService();
-  const [pendingCommands, setPendingCommands] = useState<CommandState>({});
+  const pendingCommandsRef = useRef<CommandState>({} as CommandState);
+  const [hasPendingCommands, setHasPendingCommands] = useState(false);
 
   const TIMEOUT_BUFFER_MS = 1000; // Add 1s to the controller timeout
 
-  const clearCommand = useCallback((id: number) => {
-    setPendingCommands(current => {
-      const { [id]: removed, ...remaining } = current;
-      if (removed?.timeout) {
-        clearTimeout(removed.timeout);
-      }
-      return remaining;
-    });
+  const updateHasPendingCommands = useCallback(() => {
+    setHasPendingCommands(Object.keys(pendingCommandsRef.current).length > 0);
   }, []);
 
+  const clearCommand = useCallback((id: number) => {
+    const command = pendingCommandsRef.current[id];
+    if (command?.timeout) {
+      clearTimeout(command.timeout);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { [id]: _, ...remaining } = pendingCommandsRef.current;
+    pendingCommandsRef.current = remaining;
+
+    updateHasPendingCommands();
+  }, [updateHasPendingCommands]);
+
   const handleCommandTimeout = useCallback((id: number, command: string) => {
+    // Check if command was already cleared (acknowledged)
+    if (!pendingCommandsRef.current[id]) {
+      return;
+    }
+
     clearCommand(id);
     toastStore.show(
       'Command Timeout',
@@ -57,10 +69,12 @@ export function useCommandTracking() {
         timeoutMs + TIMEOUT_BUFFER_MS
       );
 
-      setPendingCommands(current => ({
-        ...current,
+      pendingCommandsRef.current = {
+        ...pendingCommandsRef.current,
         [commandId]: { timeout, isHoming }
-      }));
+      };
+
+      updateHasPendingCommands();
     } catch (error) {
       toastStore.show(
         'Command Failed',
@@ -68,7 +82,7 @@ export function useCommandTracking() {
         'danger'
       );
     }
-  }, [serialService, settingsStore.grbl, handleCommandTimeout, toastStore]);
+  }, [serialService, settingsStore.grbl, handleCommandTimeout, toastStore, updateHasPendingCommands]);
 
   const handleCommandAck = useCallback((id: number, success: boolean, error?: string) => {
     if (!success) {
@@ -78,10 +92,9 @@ export function useCommandTracking() {
         'danger'
       );
     }
+
     clearCommand(id);
   }, [clearCommand, toastStore]);
-
-  const hasPendingCommands = Object.keys(pendingCommands).length > 0;
 
   return {
     sendCommand,
