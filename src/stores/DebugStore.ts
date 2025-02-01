@@ -10,6 +10,7 @@ export enum MessageFilterId {
   Settings = 'rx-settings',
   Outgoing = 'tx',
   Error = 'error',
+  Debug = 'debug'
 }
 
 export interface MessageFilter {
@@ -79,6 +80,12 @@ export class DebugStore {
         isEnabled: true,
         predicate: (text: string) => text.startsWith(MESSAGE_ERROR_PREFIX),
       },
+      {
+        id: MessageFilterId.Debug,
+        label: 'Debug Messages',
+        isEnabled: true,
+        predicate: (text: string) => text.startsWith('[DEBUG]'),
+      }
     ];
   }
 
