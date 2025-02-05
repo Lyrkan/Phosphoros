@@ -4,6 +4,7 @@ import { UartStatus } from '../types/Stores';
 import { useSerialService } from '../contexts/SerialServiceContext';
 import { Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 
 import splashscreen from '../../assets/splashscreen.svg';
 
@@ -155,6 +156,20 @@ const Splashscreen = observer(() => {
           )}
         </div>
       )}
+
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '1rem',
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          color: 'rgba(255, 255, 255, 0.5)',
+          fontSize: '0.8rem'
+        }}
+      >
+        Build: {process.env.GIT_COMMIT_HASH || 'unknown'} ({process.env.BUILD_DATE ? format(new Date(process.env.BUILD_DATE), 'yyyy-MM-dd HH:mm') : 'unknown'})
+      </div>
     </div>
   );
 });
