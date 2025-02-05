@@ -7,6 +7,12 @@ import { ReactElement, useMemo, useState } from 'react';
 import { CoolingMetric } from "../stores/CoolingHistoryStore";
 import CoolingHistoryModal from "../components/CoolingHistoryModal";
 
+enum PanelStatus {
+  Ok = 'ok',
+  Warning = 'warning',
+  Error = 'error'
+}
+
 const Status = observer(() => {
   const { laserStore, lidsStore, coolingStore, systemStore, serialStore, settingsStore } = useStore();
   const [selectedMetric, setSelectedMetric] = useState<CoolingMetric | null>(null);
@@ -151,15 +157,40 @@ const Status = observer(() => {
     return true;
   };
 
-  const isPanelOk = {
-    fluidnc: (currentState: LaserState, currentAlarm: AlarmState): boolean => {
-      return (currentState === LaserState.Idle || currentState === LaserState.Jog || currentState === LaserState.Run) &&
-             currentAlarm === AlarmState.NoAlarm;
+  const getStatusProps = (state: PanelStatus) => {
+    switch (state) {
+      case PanelStatus.Ok:
+        return { text: "OK", variant: "success" } as const;
+      case PanelStatus.Warning:
+        return { text: "Warning", variant: "warning" } as const;
+      case PanelStatus.Error:
+        return { text: "Issue detected", variant: "danger" } as const;
+    }
+  };
+
+  const getPanelStatus = {
+    fluidnc: (currentState: LaserState, currentAlarm: AlarmState): PanelStatus => {
+      if (currentAlarm !== AlarmState.NoAlarm) return PanelStatus.Error;
+      if (currentState === LaserState.Idle || currentState === LaserState.Jog) return PanelStatus.Ok;
+      if ([
+        LaserState.Hold,
+        LaserState.HoldComplete,
+        LaserState.Door,
+        LaserState.DoorHold,
+        LaserState.DoorResume,
+        LaserState.DoorRestart,
+        LaserState.Check,
+        LaserState.Run,
+        LaserState.Home,
+        LaserState.Unknown
+      ].includes(currentState)) return PanelStatus.Warning;
+      return PanelStatus.Error;
     },
 
-    lids: (frontLidState: LidState, backLidState: LidState): boolean => {
-      return frontLidState === LidState.Closed &&
-             backLidState === LidState.Closed;
+    lids: (frontLidState: LidState, backLidState: LidState): PanelStatus => {
+      if (frontLidState === LidState.Unknown || backLidState === LidState.Unknown) return PanelStatus.Warning;
+      if (frontLidState === LidState.Closed && backLidState === LidState.Closed) return PanelStatus.Ok;
+      return PanelStatus.Error;
     },
 
     cooling: (
@@ -167,29 +198,31 @@ const Status = observer(() => {
       outputFlow: number | undefined,
       inputTemperature: number | undefined,
       outputTemperature: number | undefined
-    ): boolean => {
+    ): PanelStatus => {
       const { probes } = settingsStore;
-      return isWithinBounds(inputFlow, probes.cooling?.flow?.min, probes.cooling?.flow?.max) &&
-             isWithinBounds(outputFlow, probes.cooling?.flow?.min, probes.cooling?.flow?.max) &&
-             isWithinBounds(inputTemperature, probes.cooling?.temp?.min, probes.cooling?.temp?.max) &&
-             isWithinBounds(outputTemperature, probes.cooling?.temp?.min, probes.cooling?.temp?.max);
+      if (inputFlow === undefined || outputFlow === undefined ||
+          inputTemperature === undefined || outputTemperature === undefined) return PanelStatus.Warning;
+      if (isWithinBounds(inputFlow, probes.cooling?.flow?.min, probes.cooling?.flow?.max) &&
+          isWithinBounds(outputFlow, probes.cooling?.flow?.min, probes.cooling?.flow?.max) &&
+          isWithinBounds(inputTemperature, probes.cooling?.temp?.min, probes.cooling?.temp?.max) &&
+          isWithinBounds(outputTemperature, probes.cooling?.temp?.min, probes.cooling?.temp?.max)) return PanelStatus.Ok;
+      return PanelStatus.Error;
     },
 
     misc: (
       flameSensorStatus: FlameSensorStatus,
       uartStatus: UartStatus,
       connectionState: UartStatus
-    ): boolean => {
-      return flameSensorStatus === FlameSensorStatus.OK &&
-             uartStatus === UartStatus.Connected &&
-             connectionState === UartStatus.Connected;
+    ): PanelStatus => {
+      if (flameSensorStatus === FlameSensorStatus.Unknown ||
+          uartStatus === UartStatus.Unknown ||
+          connectionState === UartStatus.Unknown) return PanelStatus.Warning;
+      if (flameSensorStatus === FlameSensorStatus.OK &&
+          uartStatus === UartStatus.Connected &&
+          connectionState === UartStatus.Connected) return PanelStatus.Ok;
+      return PanelStatus.Error;
     }
   };
-
-  const getStatusProps = (isOk: boolean) => ({
-    text: isOk ? "OK" : "Issue detected",
-    variant: isOk ? "success" : "danger"
-  } as const);
 
   const getProgressBarRange = (min: number | undefined, max: number | undefined, defaultMin: number, defaultMax: number) => {
     const actualMin = min ?? defaultMin;
@@ -263,7 +296,7 @@ const Status = observer(() => {
           <CardHeader
             icon="bi-cpu"
             title="FluidNC"
-            status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
+            status={getStatusProps(getPanelStatus.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
           />
           <Card.Body>
             <p className="d-flex align-items-center gap-1">
@@ -296,7 +329,7 @@ const Status = observer(() => {
           <CardHeader
             icon="bi-door-open"
             title="Lids"
-            status={getStatusProps(isPanelOk.lids(lidsStore.frontLidState, lidsStore.backLidState))}
+            status={getStatusProps(getPanelStatus.lids(lidsStore.frontLidState, lidsStore.backLidState))}
           />
           <Card.Body>
             <p className="d-flex align-items-center gap-1">
@@ -315,7 +348,7 @@ const Status = observer(() => {
           <CardHeader
             icon="bi-thermometer-half"
             title="Cooling"
-            status={getStatusProps(isPanelOk.cooling(coolingStore.inputFlow, coolingStore.outputFlow, coolingStore.inputTemperature, coolingStore.outputTemperature))}
+            status={getStatusProps(getPanelStatus.cooling(coolingStore.inputFlow, coolingStore.outputFlow, coolingStore.inputTemperature, coolingStore.outputTemperature))}
           />
           <Card.Body>
             <Row className="mb-3 align-items-center">
@@ -396,7 +429,7 @@ const Status = observer(() => {
           <CardHeader
             icon="bi-gear"
             title="Misc."
-            status={getStatusProps(isPanelOk.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
+            status={getStatusProps(getPanelStatus.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
           />
           <Card.Body>
             <p className="d-flex align-items-center gap-1">
