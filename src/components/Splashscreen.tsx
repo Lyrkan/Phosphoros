@@ -11,7 +11,7 @@ import splashscreen from '../../assets/splashscreen.svg';
 const Splashscreen = observer(() => {
   const { serialStore, settingsStore } = useStore();
   const serialService = useSerialService();
-  const [showSkip, setShowSkip] = useState(false);
+  const [showSkip, setShowSkip] = useState(globalThis.isDev ? true : false);
   const hasError = serialStore.connectionState === UartStatus.Error;
   const isConnected = serialStore.connectionState === UartStatus.Connected;
 
