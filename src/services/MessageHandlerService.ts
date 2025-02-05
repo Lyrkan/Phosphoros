@@ -109,7 +109,15 @@ export class MessageHandlerService implements IMessageHandlerService {
   }
 
   private handleGrblMessage(payload: GrblMessagePayload): void {
-    console.log('Grbl message:', payload.message);
+    // Check if it's an error message (starts with 'error:')
+    if (payload.message.toLowerCase().startsWith('error:')) {
+      const errorMessage = payload.message.replace(/^error:\s*/i, '');
+      this.store.toastStore.show(
+        'Grbl Error',
+        errorMessage,
+        'danger'
+      );
+    }
   }
 
   private handleGrblAck(payload: GrblAckPayload): void {
