@@ -31,3 +31,12 @@ body {
   color: var(--bs-btn-color) !important;
   box-shadow: none !important;
 }
+
+@keyframes marquee {
+  0%, 10% {
+    transform: translateX(0);
+  }
+  90%, 100% {
+    transform: translateX(min(-100%, -100vw));
+  }
+}

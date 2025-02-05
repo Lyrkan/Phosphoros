@@ -93,5 +93,13 @@ export class DevSimulationService {
 
     // Simulate relay states
     laserStore.setInterlock(this.randomChance(0.95));
+
+    // Simulate active pins
+    const pins = Object.keys(laserStore.activePins) as Array<keyof typeof laserStore.activePins>;
+    const pinUpdates = pins.reduce((acc, pin) => ({
+      ...acc,
+      [pin]: this.randomChance(0.3) // 30% chance for each pin to be active
+    }), {});
+    laserStore.setActivePins(pinUpdates);
   }
 }

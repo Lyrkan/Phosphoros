@@ -1,6 +1,17 @@
 import { makeAutoObservable, action } from "mobx";
 import { LaserState, AlarmState, PositionType , Position } from "../types/Stores";
 
+export interface ActivePins {
+  x: boolean;
+  y: boolean;
+  z: boolean;
+  p: boolean;
+  d: boolean;
+  h: boolean;
+  r: boolean;
+  s: boolean;
+}
+
 export class LaserStore {
   private _currentState: LaserState = LaserState.Unknown;
   private _currentAlarm: AlarmState = AlarmState.Unknown;
@@ -14,6 +25,17 @@ export class LaserStore {
   private _lights?: boolean;
   private _airAssist?: boolean;
   private _beamPreview?: boolean;
+
+  private _activePins: ActivePins = {
+    x: false,
+    y: false,
+    z: false,
+    p: false,
+    d: false,
+    h: false,
+    r: false,
+    s: false
+  };
 
   constructor() {
     makeAutoObservable(this);
@@ -57,6 +79,10 @@ export class LaserStore {
 
   get beamPreview() {
     return this._beamPreview;
+  }
+
+  get activePins(): Readonly<ActivePins> {
+    return this._activePins;
   }
 
   setState = action((state: LaserState) => {
@@ -103,5 +129,9 @@ export class LaserStore {
         this._workOffset = position;
         break;
     }
+  });
+
+  setActivePins = action((pins: Partial<ActivePins>) => {
+    this._activePins = { ...this._activePins, ...pins };
   });
 }

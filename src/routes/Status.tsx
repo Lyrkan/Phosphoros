@@ -44,6 +44,18 @@ const Status = observer(() => {
     fontSize: '1rem'
   };
 
+  const marqueeContainerStyle = {
+    overflow: 'hidden',
+    whiteSpace: 'nowrap' as const,
+    position: 'relative' as const,
+    flex: '1',
+  };
+
+  const marqueeTextStyle = {
+    display: 'inline-block',
+    animation: 'marquee 15s linear infinite',
+  };
+
   const getProgressBarStyle = (variant: string) => ({
     height: '100%',
     backgroundColor: (variant === 'danger' ? 'var(--bs-danger-bg-subtle)' : 'var(--bs-progress-bg)'),
@@ -246,166 +258,180 @@ const Status = observer(() => {
   };
 
   return (
-    <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
-      <Card className="border-primary g-col-6">
-        <CardHeader
-          icon="bi-cpu"
-          title="FluidNC"
-          status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
-        />
-        <Card.Body>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Current State:</strong>
-            <span className="flex-grow-1 fw-light">{laserStore.currentState}</span>
-            {getLaserStateBadge(laserStore.currentState)}
-          </p>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Alarm State:</strong>
-            <span className="flex-grow-1 fw-light">{laserStore.currentAlarm}</span>
-            {getAlarmStateBadge(laserStore.currentAlarm)}
-          </p>
-        </Card.Body>
-      </Card>
-      <Card className="border-primary g-col-6">
-        <CardHeader
-          icon="bi-door-open"
-          title="Lids"
-          status={getStatusProps(isPanelOk.lids(lidsStore.frontLidState, lidsStore.backLidState))}
-        />
-        <Card.Body>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Front Lid:</strong>
-            <span className="flex-grow-1 fw-light">{lidsStore.frontLidState}</span>
-            {getLidStateBadge(lidsStore.frontLidState)}
-          </p>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Back Lid:</strong>
-            <span className="flex-grow-1 fw-light">{lidsStore.backLidState}</span>
-            {getLidStateBadge(lidsStore.backLidState)}
-          </p>
-        </Card.Body>
-      </Card>
-      <Card className="border-primary g-col-6">
-        <CardHeader
-          icon="bi-thermometer-half"
-          title="Cooling"
-          status={getStatusProps(isPanelOk.cooling(coolingStore.inputFlow, coolingStore.outputFlow, coolingStore.inputTemperature, coolingStore.outputTemperature))}
-        />
-        <Card.Body>
-          <Row className="mb-3 align-items-center">
-            <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
-            <Col xs={8}>
-              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputFlow)} role="button">
-                <div style={progressLabelStyle}>
-                  {coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow.toFixed(1)} L/min` : 'Unknown'}
-                </div>
-                <ProgressBar
-                  style={getProgressBarStyle(progressBarVariants.inputFlow)}
-                  min={flowRange.min}
-                  max={flowRange.max}
-                  now={coolingStore.inputFlow}
-                  variant={progressBarVariants.inputFlow}
-                />
-                <i className="bi bi-search" style={searchIconStyle}></i>
+      <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
+        <Card className="border-primary g-col-6">
+          <CardHeader
+            icon="bi-cpu"
+            title="FluidNC"
+            status={getStatusProps(isPanelOk.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
+          />
+          <Card.Body>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Current State:</strong>
+              <span className="flex-grow-1 fw-light">{laserStore.currentState}</span>
+              {getLaserStateBadge(laserStore.currentState)}
+            </p>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Alarm State:</strong>
+              <div style={marqueeContainerStyle}>
+                <span className="fw-light" style={laserStore.currentAlarm.length > 20 ? marqueeTextStyle : undefined}>
+                  {laserStore.currentAlarm}
+                </span>
               </div>
-            </Col>
-          </Row>
-          <Row className="mb-3 align-items-center">
-            <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
-            <Col xs={8}>
-              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputTemperature)} role="button">
-                <div style={progressLabelStyle}>
-                  {coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature.toFixed(1)}°C` : 'Unknown'}
+              {getAlarmStateBadge(laserStore.currentAlarm)}
+            </p>
+            <p className="d-flex align-items-center gap-2">
+              <strong className="text-nowrap">Pins state:</strong>
+              <span className="flex-grow-1 fw-light d-flex gap-1 flex-wrap">
+                {Object.entries(laserStore.activePins).map(([key, value]) => (
+                  <Badge key={key} bg={value ? 'warning' : 'dark'} className="text-uppercase">
+                    {key}
+                  </Badge>
+                ))}
+              </span>
+            </p>
+          </Card.Body>
+        </Card>
+        <Card className="border-primary g-col-6">
+          <CardHeader
+            icon="bi-door-open"
+            title="Lids"
+            status={getStatusProps(isPanelOk.lids(lidsStore.frontLidState, lidsStore.backLidState))}
+          />
+          <Card.Body>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Front Lid:</strong>
+              <span className="flex-grow-1 fw-light">{lidsStore.frontLidState}</span>
+              {getLidStateBadge(lidsStore.frontLidState)}
+            </p>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Back Lid:</strong>
+              <span className="flex-grow-1 fw-light">{lidsStore.backLidState}</span>
+              {getLidStateBadge(lidsStore.backLidState)}
+            </p>
+          </Card.Body>
+        </Card>
+        <Card className="border-primary g-col-6">
+          <CardHeader
+            icon="bi-thermometer-half"
+            title="Cooling"
+            status={getStatusProps(isPanelOk.cooling(coolingStore.inputFlow, coolingStore.outputFlow, coolingStore.inputTemperature, coolingStore.outputTemperature))}
+          />
+          <Card.Body>
+            <Row className="mb-3 align-items-center">
+              <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
+              <Col xs={8}>
+                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputFlow)} role="button">
+                  <div style={progressLabelStyle}>
+                    {coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow.toFixed(1)} L/min` : 'Unknown'}
+                  </div>
+                  <ProgressBar
+                    style={getProgressBarStyle(progressBarVariants.inputFlow)}
+                    min={flowRange.min}
+                    max={flowRange.max}
+                    now={coolingStore.inputFlow}
+                    variant={progressBarVariants.inputFlow}
+                  />
+                  <i className="bi bi-search" style={searchIconStyle}></i>
                 </div>
-                <ProgressBar
-                  style={getProgressBarStyle(progressBarVariants.inputTemp)}
-                  min={tempRange.min}
-                  max={tempRange.max}
-                  now={coolingStore.inputTemperature}
-                  variant={progressBarVariants.inputTemp}
-                />
-                <i className="bi bi-search" style={searchIconStyle}></i>
-              </div>
-            </Col>
-          </Row>
-          <Row className="mb-3 align-items-center">
-            <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
-            <Col xs={8}>
-              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputFlow)} role="button">
-                <div style={progressLabelStyle}>
-                  {coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow.toFixed(1)} L/min` : 'Unknown'}
+              </Col>
+            </Row>
+            <Row className="mb-3 align-items-center">
+              <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
+              <Col xs={8}>
+                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputTemperature)} role="button">
+                  <div style={progressLabelStyle}>
+                    {coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature.toFixed(1)}°C` : 'Unknown'}
+                  </div>
+                  <ProgressBar
+                    style={getProgressBarStyle(progressBarVariants.inputTemp)}
+                    min={tempRange.min}
+                    max={tempRange.max}
+                    now={coolingStore.inputTemperature}
+                    variant={progressBarVariants.inputTemp}
+                  />
+                  <i className="bi bi-search" style={searchIconStyle}></i>
                 </div>
-                <ProgressBar
-                  style={getProgressBarStyle(progressBarVariants.outputFlow)}
-                  min={flowRange.min}
-                  max={flowRange.max}
-                  now={coolingStore.outputFlow}
-                  variant={progressBarVariants.outputFlow}
-                />
-                <i className="bi bi-search" style={searchIconStyle}></i>
-              </div>
-            </Col>
-          </Row>
-          <Row className="align-items-center">
-            <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
-            <Col xs={8}>
-              <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputTemperature)} role="button">
-                <div style={progressLabelStyle}>
-                  {coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature.toFixed(1)}°C` : 'Unknown'}
+              </Col>
+            </Row>
+            <Row className="mb-3 align-items-center">
+              <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
+              <Col xs={8}>
+                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputFlow)} role="button">
+                  <div style={progressLabelStyle}>
+                    {coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow.toFixed(1)} L/min` : 'Unknown'}
+                  </div>
+                  <ProgressBar
+                    style={getProgressBarStyle(progressBarVariants.outputFlow)}
+                    min={flowRange.min}
+                    max={flowRange.max}
+                    now={coolingStore.outputFlow}
+                    variant={progressBarVariants.outputFlow}
+                  />
+                  <i className="bi bi-search" style={searchIconStyle}></i>
                 </div>
-                <ProgressBar
-                  style={getProgressBarStyle(progressBarVariants.outputTemp)}
-                  min={tempRange.min}
-                  max={tempRange.max}
-                  now={coolingStore.outputTemperature}
-                  variant={progressBarVariants.outputTemp}
-                />
-                <i className="bi bi-search" style={searchIconStyle}></i>
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-      <Card className="border-primary g-col-6">
-        <CardHeader
-          icon="bi-gear"
-          title="Misc."
-          status={getStatusProps(isPanelOk.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
-        />
-        <Card.Body>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Flame Sensor:</strong>
-            <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
-            {getFlameSensorBadge(systemStore.flameSensorStatus)}
-          </p>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">Software interlock:</strong>
-            <span className="flex-grow-1 fw-light">
-              {laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
-            </span>
-            {getInterlockBadge(laserStore.interlock)}
-          </p>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">UART#1 Status:</strong>
-            <span className="flex-grow-1 fw-light">{systemStore.uartStatus}</span>
-            {getUartStatusBadge(systemStore.uartStatus)}
-          </p>
-          <p className="d-flex align-items-baseline gap-1">
-            <strong className="text-nowrap">UART#2 Status:</strong>
-            <span className="flex-grow-1 fw-light">{(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}</span>
-            {getSerialConnectionBadge(serialStore.connectionState)}
-          </p>
-        </Card.Body>
-      </Card>
+              </Col>
+            </Row>
+            <Row className="align-items-center">
+              <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
+              <Col xs={8}>
+                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputTemperature)} role="button">
+                  <div style={progressLabelStyle}>
+                    {coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature.toFixed(1)}°C` : 'Unknown'}
+                  </div>
+                  <ProgressBar
+                    style={getProgressBarStyle(progressBarVariants.outputTemp)}
+                    min={tempRange.min}
+                    max={tempRange.max}
+                    now={coolingStore.outputTemperature}
+                    variant={progressBarVariants.outputTemp}
+                  />
+                  <i className="bi bi-search" style={searchIconStyle}></i>
+                </div>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+        <Card className="border-primary g-col-6">
+          <CardHeader
+            icon="bi-gear"
+            title="Misc."
+            status={getStatusProps(isPanelOk.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
+          />
+          <Card.Body>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Flame Sensor:</strong>
+              <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
+              {getFlameSensorBadge(systemStore.flameSensorStatus)}
+            </p>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">Software interlock:</strong>
+              <span className="flex-grow-1 fw-light">
+                {laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
+              </span>
+              {getInterlockBadge(laserStore.interlock)}
+            </p>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">UART#1 Status:</strong>
+              <span className="flex-grow-1 fw-light">{systemStore.uartStatus}</span>
+              {getUartStatusBadge(systemStore.uartStatus)}
+            </p>
+            <p className="d-flex align-items-center gap-1">
+              <strong className="text-nowrap">UART#2 Status:</strong>
+              <span className="flex-grow-1 fw-light">{(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}</span>
+              {getSerialConnectionBadge(serialStore.connectionState)}
+            </p>
+          </Card.Body>
+        </Card>
 
-      {selectedMetric && (
-        <CoolingHistoryModal
-          show={true}
-          onHide={() => setSelectedMetric(null)}
-          metric={selectedMetric}
-        />
-      )}
-    </div>
+        {selectedMetric && (
+          <CoolingHistoryModal
+            show={true}
+            onHide={() => setSelectedMetric(null)}
+            metric={selectedMetric}
+          />
+        )}
+      </div>
   );
 });
 

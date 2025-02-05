@@ -101,6 +101,11 @@ export class MessageHandlerService implements IMessageHandlerService {
     if (payload.feed?.rate !== undefined) {
       laserStore.setSpeed(payload.feed.rate);
     }
+
+    // Update active pins if present
+    if (payload.active_pins) {
+      laserStore.setActivePins(payload.active_pins);
+    }
   }
 
   private handleGrblMessage(payload: GrblMessagePayload): void {
