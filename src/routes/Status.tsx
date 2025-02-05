@@ -1,4 +1,4 @@
-import { Card, ProgressBar, Row, Col, Badge } from "react-bootstrap";
+import { Card, Badge } from "react-bootstrap";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../stores/RootStore";
 import CardHeader from "../components/CardHeader";
@@ -6,6 +6,8 @@ import { LaserState, AlarmState, LidState, FlameSensorStatus, UartStatus } from 
 import { ReactElement, useMemo, useState } from 'react';
 import { CoolingMetric } from "../stores/CoolingHistoryStore";
 import CoolingHistoryModal from "../components/CoolingHistoryModal";
+import StatusItem from "../components/StatusItem";
+import MetricProgressBar from "../components/MetricProgressBar";
 
 enum PanelStatus {
   Ok = 'ok',
@@ -19,59 +21,6 @@ const Status = observer(() => {
 
   const gridStyle = {
     gridAutoRows: '1fr'
-  };
-
-  const progressBarContainerStyle = {
-    height: '2rem',
-    fontSize: '1rem',
-    position: 'relative' as const,
-  };
-
-  const progressLabelStyle = {
-    position: 'absolute' as const,
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white',
-    zIndex: 1,
-    fontSize: '.9em',
-  };
-
-  const searchIconStyle = {
-    position: 'absolute' as const,
-    right: '.5rem',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    zIndex: 2,
-    color: 'var(--bs-body-color)',
-    opacity: 0.5,
-    fontSize: '1rem'
-  };
-
-  const marqueeContainerStyle = {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap' as const,
-    position: 'relative' as const,
-    flex: '1',
-  };
-
-  const marqueeTextStyle = {
-    display: 'inline-block',
-    animation: 'marquee 15s linear infinite',
-  };
-
-  const getProgressBarStyle = (variant: string) => ({
-    height: '100%',
-    backgroundColor: (variant === 'danger' ? 'var(--bs-danger-bg-subtle)' : 'var(--bs-progress-bg)'),
-  });
-
-  const labelStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    height: '100%',
-    margin: 0,
   };
 
   const getStatusBadge = (state: string, warningStates: string[], okStates: string[]): ReactElement|null => {
@@ -286,10 +235,6 @@ const Status = observer(() => {
     settingsStore.probes.cooling?.temp?.max
   ]);
 
-  const handleProgressBarClick = (metric: CoolingMetric) => {
-    setSelectedMetric(metric);
-  };
-
   return (
       <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
         <Card className="border-primary g-col-6">
@@ -299,20 +244,17 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
           />
           <Card.Body>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">Current State:</strong>
-              <span className="flex-grow-1 fw-light">{laserStore.currentState}</span>
-              {getLaserStateBadge(laserStore.currentState)}
-            </div>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">Alarm State:</strong>
-              <span style={marqueeContainerStyle}>
-                <span className="fw-light" style={laserStore.currentAlarm.length > 20 ? marqueeTextStyle : undefined}>
-                  {laserStore.currentAlarm}
-                </span>
-              </span>
-              {getAlarmStateBadge(laserStore.currentAlarm)}
-            </div>
+            <StatusItem
+              label="Current State"
+              value={laserStore.currentState}
+              badge={getLaserStateBadge(laserStore.currentState)}
+            />
+            <StatusItem
+              label="Alarm State"
+              value={laserStore.currentAlarm}
+              badge={getAlarmStateBadge(laserStore.currentAlarm)}
+              marquee={true}
+            />
             <div className="d-flex align-items-center gap-2">
               <strong className="text-nowrap">Pins state:</strong>
               <span className="flex-grow-1 fw-light d-flex gap-1 flex-wrap">
@@ -332,16 +274,17 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.lids(lidsStore.frontLidState, lidsStore.backLidState))}
           />
           <Card.Body>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">Front Lid:</strong>
-              <span className="flex-grow-1 fw-light">{lidsStore.frontLidState}</span>
-              {getLidStateBadge(lidsStore.frontLidState)}
-            </div>
-            <div className="d-flex align-items-center gap-1">
-              <strong className="text-nowrap">Back Lid:</strong>
-              <span className="flex-grow-1 fw-light">{lidsStore.backLidState}</span>
-              {getLidStateBadge(lidsStore.backLidState)}
-            </div>
+            <StatusItem
+              label="Front Lid"
+              value={lidsStore.frontLidState}
+              badge={getLidStateBadge(lidsStore.frontLidState)}
+            />
+            <StatusItem
+              label="Back Lid"
+              value={lidsStore.backLidState}
+              badge={getLidStateBadge(lidsStore.backLidState)}
+              className=""
+            />
           </Card.Body>
         </Card>
         <Card className="border-primary g-col-6">
@@ -351,78 +294,43 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.cooling(coolingStore.inputFlow, coolingStore.outputFlow, coolingStore.inputTemperature, coolingStore.outputTemperature))}
           />
           <Card.Body>
-            <Row className="mb-3 align-items-center">
-              <Col xs={4} style={labelStyle}><strong>Input Flow:</strong></Col>
-              <Col xs={8}>
-                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputFlow)} role="button">
-                  <div style={progressLabelStyle}>
-                    {coolingStore.inputFlow !== undefined ? `${coolingStore.inputFlow.toFixed(1)} L/min` : 'Unknown'}
-                  </div>
-                  <ProgressBar
-                    style={getProgressBarStyle(progressBarVariants.inputFlow)}
-                    min={flowRange.min}
-                    max={flowRange.max}
-                    now={coolingStore.inputFlow}
-                    variant={progressBarVariants.inputFlow}
-                  />
-                  <i className="bi bi-search" style={searchIconStyle}></i>
-                </div>
-              </Col>
-            </Row>
-            <Row className="mb-3 align-items-center">
-              <Col xs={4} style={labelStyle}><strong>Input Temp.:</strong></Col>
-              <Col xs={8}>
-                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.InputTemperature)} role="button">
-                  <div style={progressLabelStyle}>
-                    {coolingStore.inputTemperature !== undefined ? `${coolingStore.inputTemperature.toFixed(1)}°C` : 'Unknown'}
-                  </div>
-                  <ProgressBar
-                    style={getProgressBarStyle(progressBarVariants.inputTemp)}
-                    min={tempRange.min}
-                    max={tempRange.max}
-                    now={coolingStore.inputTemperature}
-                    variant={progressBarVariants.inputTemp}
-                  />
-                  <i className="bi bi-search" style={searchIconStyle}></i>
-                </div>
-              </Col>
-            </Row>
-            <Row className="mb-3 align-items-center">
-              <Col xs={4} style={labelStyle}><strong>Output Flow:</strong></Col>
-              <Col xs={8}>
-                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputFlow)} role="button">
-                  <div style={progressLabelStyle}>
-                    {coolingStore.outputFlow !== undefined ? `${coolingStore.outputFlow.toFixed(1)} L/min` : 'Unknown'}
-                  </div>
-                  <ProgressBar
-                    style={getProgressBarStyle(progressBarVariants.outputFlow)}
-                    min={flowRange.min}
-                    max={flowRange.max}
-                    now={coolingStore.outputFlow}
-                    variant={progressBarVariants.outputFlow}
-                  />
-                  <i className="bi bi-search" style={searchIconStyle}></i>
-                </div>
-              </Col>
-            </Row>
-            <Row className="align-items-center">
-              <Col xs={4} style={labelStyle}><strong>Output Temp.:</strong></Col>
-              <Col xs={8}>
-                <div style={progressBarContainerStyle} onClick={() => handleProgressBarClick(CoolingMetric.OutputTemperature)} role="button">
-                  <div style={progressLabelStyle}>
-                    {coolingStore.outputTemperature !== undefined ? `${coolingStore.outputTemperature.toFixed(1)}°C` : 'Unknown'}
-                  </div>
-                  <ProgressBar
-                    style={getProgressBarStyle(progressBarVariants.outputTemp)}
-                    min={tempRange.min}
-                    max={tempRange.max}
-                    now={coolingStore.outputTemperature}
-                    variant={progressBarVariants.outputTemp}
-                  />
-                  <i className="bi bi-search" style={searchIconStyle}></i>
-                </div>
-              </Col>
-            </Row>
+            <MetricProgressBar
+              label="Input Flow"
+              value={coolingStore.inputFlow}
+              unit=" L/min"
+              min={flowRange.min}
+              max={flowRange.max}
+              variant={progressBarVariants.inputFlow}
+              onClick={() => setSelectedMetric(CoolingMetric.InputFlow)}
+            />
+            <MetricProgressBar
+              label="Input Temp."
+              value={coolingStore.inputTemperature}
+              unit="°C"
+              min={tempRange.min}
+              max={tempRange.max}
+              variant={progressBarVariants.inputTemp}
+              onClick={() => setSelectedMetric(CoolingMetric.InputTemperature)}
+            />
+            <MetricProgressBar
+              label="Output Flow"
+              value={coolingStore.outputFlow}
+              unit=" L/min"
+              min={flowRange.min}
+              max={flowRange.max}
+              variant={progressBarVariants.outputFlow}
+              onClick={() => setSelectedMetric(CoolingMetric.OutputFlow)}
+            />
+            <MetricProgressBar
+              label="Output Temp."
+              value={coolingStore.outputTemperature}
+              unit="°C"
+              min={tempRange.min}
+              max={tempRange.max}
+              variant={progressBarVariants.outputTemp}
+              onClick={() => setSelectedMetric(CoolingMetric.OutputTemperature)}
+              className=""
+            />
           </Card.Body>
         </Card>
         <Card className="border-primary g-col-6">
@@ -432,28 +340,27 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
           />
           <Card.Body>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">Flame Sensor:</strong>
-              <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
-              {getFlameSensorBadge(systemStore.flameSensorStatus)}
-            </div>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">Software interlock:</strong>
-              <span className="flex-grow-1 fw-light">
-                {laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
-              </span>
-              {getInterlockBadge(laserStore.interlock)}
-            </div>
-            <div className="d-flex align-items-center gap-1 mb-3">
-              <strong className="text-nowrap">UART#1 Status:</strong>
-              <span className="flex-grow-1 fw-light">{systemStore.uartStatus}</span>
-              {getUartStatusBadge(systemStore.uartStatus)}
-            </div>
-            <div className="d-flex align-items-center gap-1">
-              <strong className="text-nowrap">UART#2 Status:</strong>
-              <span className="flex-grow-1 fw-light">{(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}</span>
-              {getSerialConnectionBadge(serialStore.connectionState)}
-            </div>
+            <StatusItem
+              label="Flame Sensor"
+              value={systemStore.flameSensorStatus}
+              badge={getFlameSensorBadge(systemStore.flameSensorStatus)}
+            />
+            <StatusItem
+              label="Software interlock"
+              value={laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
+              badge={getInterlockBadge(laserStore.interlock)}
+            />
+            <StatusItem
+              label="UART#1 Status"
+              value={systemStore.uartStatus}
+              badge={getUartStatusBadge(systemStore.uartStatus)}
+            />
+            <StatusItem
+              label="UART#2 Status"
+              value={(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}
+              badge={getSerialConnectionBadge(serialStore.connectionState)}
+              className=""
+            />
           </Card.Body>
         </Card>
 
