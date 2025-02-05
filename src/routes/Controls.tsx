@@ -39,6 +39,10 @@ const Controls = observer(() => {
     await sendCommand('$MD');
   };
 
+  const handleToggleButtonBlur = (e: React.MouseEvent | React.TouchEvent) => {
+    (e.currentTarget as HTMLElement).blur();
+  };
+
   const handleRelayToggle = async (relay: keyof RelaysSetPayload, newValue: boolean) => {
     try {
       await serialService.sendCommand(OutgoingMessageType.RelaysSet, {
@@ -131,40 +135,48 @@ const Controls = observer(() => {
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('interlock', !laserStore.interlock)}
-                className="w-100 h-100 toggle-button"
+                onMouseUp={handleToggleButtonBlur}
+                onTouchEnd={handleToggleButtonBlur}
+                className="w-100 h-100"
                 active={laserStore.interlock === true}
               >
-                <i className="bi bi-shield-lock"></i> Interlock
+                <i className={`${laserStore.interlock ? 'bi-shield-lock-fill text-white' : 'bi-shield-lock text-muted'} me-2`}></i> Interlock
               </Button>
             </Col>
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('lights', !laserStore.lights)}
-                className="w-100 h-100 toggle-button"
+                onMouseUp={handleToggleButtonBlur}
+                onTouchEnd={handleToggleButtonBlur}
+                className="w-100 h-100"
                 active={laserStore.lights === true}
               >
-                <i className="bi bi-lightbulb"></i> Lights
+                <i className={`${laserStore.lights ? 'bi-lightbulb-fill text-white' : 'bi-lightbulb text-muted'} me-2`}></i> Lights
               </Button>
             </Col>
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('air_assist', !laserStore.airAssist)}
-                className="w-100 h-100 toggle-button"
+                onMouseUp={handleToggleButtonBlur}
+                onTouchEnd={handleToggleButtonBlur}
+                className="w-100 h-100"
                 active={laserStore.airAssist === true}
               >
-                <i className="bi bi-wind"></i> Air Assist
+                <i className={`${laserStore.airAssist ? 'bi-wind text-white' : 'bi-wind text-muted'} me-2`}></i> Air Assist
               </Button>
             </Col>
             <Col xs={6} className="d-flex justify-content-center mb-2">
               <Button
                 variant="primary"
                 onClick={() => handleRelayToggle('beam_preview', !laserStore.beamPreview)}
-                className="w-100 h-100 toggle-button"
+                onMouseUp={handleToggleButtonBlur}
+                onTouchEnd={handleToggleButtonBlur}
+                className="w-100 h-100"
                 active={laserStore.beamPreview === true}
               >
-                <i className="bi bi-eye"></i> Beam Preview
+                <i className={`${laserStore.beamPreview ? 'bi-eye-fill text-white' : 'bi-eye text-muted'} me-2`}></i> Beam Preview
               </Button>
             </Col>
           </Row>
