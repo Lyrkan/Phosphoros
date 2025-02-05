@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 import { observer } from 'mobx-react-lite';
 import { useStore } from '../stores/RootStore';
@@ -12,7 +12,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions
+  ChartOptions,
+  ChartData,
+  Chart,
+  TooltipItem
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { format } from 'date-fns';
@@ -69,7 +72,7 @@ const CoolingHistoryModal = observer(({ show, onHide, metric }: Props) => {
 
   const limits = getMetricLimits(metric);
 
-  const chartData = {
+  const chartData: ChartData<'line'> = {
     labels: data.map(point => formatTime(point.timestamp)),
     datasets: [
       {
@@ -95,6 +98,61 @@ const CoolingHistoryModal = observer(({ show, onHide, metric }: Props) => {
         tension: 0
       }] : [])
     ]
+  };
+
+  const drawBackgroundZones = (chart: Chart) => {
+    const ctx = chart.ctx;
+    const xAxis = chart.scales.x;
+    const yAxis = chart.scales.y;
+
+    if (!ctx || !xAxis || !yAxis || !data.length) return;
+
+    // Get chart area bounds
+    const chartArea = chart.chartArea;
+    if (!chartArea) return;
+
+    ctx.save();
+
+    let zoneStart: number | null = null;
+
+    // Helper to draw a zone from start to end index
+    const drawZone = (startIdx: number, endIdx: number) => {
+      // Calculate positions based on chart area and data indices
+      const totalPoints = data.length - 1; // -1 because we want gaps between points
+      const pointWidth = (chartArea.right - chartArea.left) / totalPoints;
+
+      const startX = chartArea.left + (startIdx * pointWidth);
+      const endX = chartArea.left + ((endIdx + 1) * pointWidth);
+
+      // Draw the zone
+      ctx.fillStyle = 'rgba(255, 193, 7, 0.2)';
+      ctx.fillRect(
+        startX,
+        chartArea.top,
+        endX - startX,
+        chartArea.bottom - chartArea.top
+      );
+    };
+
+    // Iterate through data points to find continuous laser running zones
+    data.forEach((point, index) => {
+      if (point.isLaserRunning) {
+        if (zoneStart === null) {
+          zoneStart = index;
+        }
+      } else if (zoneStart !== null) {
+        // End of a zone
+        drawZone(zoneStart, index - 1);
+        zoneStart = null;
+      }
+    });
+
+    // Handle case where laser is still running at the end
+    if (zoneStart !== null) {
+      drawZone(zoneStart, data.length - 1);
+    }
+
+    ctx.restore();
   };
 
   const chartOptions: ChartOptions<'line'> = {
@@ -125,9 +183,23 @@ const CoolingHistoryModal = observer(({ show, onHide, metric }: Props) => {
       legend: {
         display: true,
         position: 'top'
+      },
+      tooltip: {
+        callbacks: {
+          afterBody: (context: TooltipItem<'line'>[]) => {
+            const dataPoint = data[context[0].dataIndex];
+            if (dataPoint?.isLaserRunning) {
+              return 'Laser Running';
+            }
+            return undefined;
+          }
+        }
       }
     }
   };
+
+  // Force chart update when data changes
+  const chartKey = useMemo(() => JSON.stringify(data.map(d => d.isLaserRunning)), [data]);
 
   return (
     <Modal show={show} onHide={onHide} size="lg">
@@ -151,7 +223,15 @@ const CoolingHistoryModal = observer(({ show, onHide, metric }: Props) => {
           </ButtonGroup>
         </div>
         <div style={{ height: '400px' }}>
-          <Line data={chartData} options={chartOptions} />
+          <Line
+            key={chartKey}
+            data={chartData}
+            options={chartOptions}
+            plugins={[{
+              id: 'backgroundZones',
+              beforeDraw: drawBackgroundZones
+            }]}
+          />
         </div>
       </Modal.Body>
     </Modal>

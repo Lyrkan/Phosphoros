@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { RootStore } from './RootStore';
+import { LaserState } from '../types/Stores';
 
 export enum CoolingMetric {
   InputFlow = 'inputFlow',
@@ -11,6 +12,7 @@ export enum CoolingMetric {
 interface MetricDataPoint {
   timestamp: number;
   value: number;
+  isLaserRunning?: boolean;
 }
 
 interface HistoryPeriod {
@@ -50,20 +52,21 @@ export class CoolingHistoryStore {
     // Setup update intervals
     this._periods.forEach(period => {
       const interval = setInterval(() => {
-        const { coolingStore } = this._rootStore;
+        const { coolingStore, laserStore } = this._rootStore;
         const now = Date.now();
+        const isLaserRunning = laserStore.currentState === LaserState.Run;
 
         if (coolingStore.inputFlow !== undefined) {
-          this.addDataPoint(CoolingMetric.InputFlow, coolingStore.inputFlow, now, period);
+          this.addDataPoint(CoolingMetric.InputFlow, coolingStore.inputFlow, now, period, isLaserRunning);
         }
         if (coolingStore.outputFlow !== undefined) {
-          this.addDataPoint(CoolingMetric.OutputFlow, coolingStore.outputFlow, now, period);
+          this.addDataPoint(CoolingMetric.OutputFlow, coolingStore.outputFlow, now, period, isLaserRunning);
         }
         if (coolingStore.inputTemperature !== undefined) {
-          this.addDataPoint(CoolingMetric.InputTemperature, coolingStore.inputTemperature, now, period);
+          this.addDataPoint(CoolingMetric.InputTemperature, coolingStore.inputTemperature, now, period, isLaserRunning);
         }
         if (coolingStore.outputTemperature !== undefined) {
-          this.addDataPoint(CoolingMetric.OutputTemperature, coolingStore.outputTemperature, now, period);
+          this.addDataPoint(CoolingMetric.OutputTemperature, coolingStore.outputTemperature, now, period, isLaserRunning);
         }
       }, period.interval);
 
@@ -77,14 +80,14 @@ export class CoolingHistoryStore {
     this._periods.forEach(period => period.data.clear());
   }
 
-  private addDataPoint(metric: CoolingMetric, value: number, timestamp: number, period: HistoryPeriod): void {
+  private addDataPoint(metric: CoolingMetric, value: number, timestamp: number, period: HistoryPeriod, isLaserRunning: boolean): void {
     const data = period.data.get(metric);
     if (!data) return;
 
-    // Add new data point
-    data.push({ timestamp, value });
+    // Add new point
+    data.push({ timestamp, value, isLaserRunning });
 
-    // Remove old data points
+    // Remove points older than the period duration
     const cutoffTime = timestamp - period.duration;
     while (data.length > 0 && data[0].timestamp < cutoffTime) {
       data.shift();
