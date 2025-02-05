@@ -299,21 +299,21 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.fluidnc(laserStore.currentState, laserStore.currentAlarm))}
           />
           <Card.Body>
-            <p className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">Current State:</strong>
               <span className="flex-grow-1 fw-light">{laserStore.currentState}</span>
               {getLaserStateBadge(laserStore.currentState)}
-            </p>
-            <p className="d-flex align-items-center gap-1">
+            </div>
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">Alarm State:</strong>
-              <div style={marqueeContainerStyle}>
+              <span style={marqueeContainerStyle}>
                 <span className="fw-light" style={laserStore.currentAlarm.length > 20 ? marqueeTextStyle : undefined}>
                   {laserStore.currentAlarm}
                 </span>
-              </div>
+              </span>
               {getAlarmStateBadge(laserStore.currentAlarm)}
-            </p>
-            <p className="d-flex align-items-center gap-2">
+            </div>
+            <div className="d-flex align-items-center gap-2">
               <strong className="text-nowrap">Pins state:</strong>
               <span className="flex-grow-1 fw-light d-flex gap-1 flex-wrap">
                 {Object.entries(laserStore.activePins).map(([key, value]) => (
@@ -322,7 +322,7 @@ const Status = observer(() => {
                   </Badge>
                 ))}
               </span>
-            </p>
+            </div>
           </Card.Body>
         </Card>
         <Card className="border-primary g-col-6">
@@ -332,16 +332,16 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.lids(lidsStore.frontLidState, lidsStore.backLidState))}
           />
           <Card.Body>
-            <p className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">Front Lid:</strong>
               <span className="flex-grow-1 fw-light">{lidsStore.frontLidState}</span>
               {getLidStateBadge(lidsStore.frontLidState)}
-            </p>
-            <p className="d-flex align-items-center gap-1">
+            </div>
+            <div className="d-flex align-items-center gap-1">
               <strong className="text-nowrap">Back Lid:</strong>
               <span className="flex-grow-1 fw-light">{lidsStore.backLidState}</span>
               {getLidStateBadge(lidsStore.backLidState)}
-            </p>
+            </div>
           </Card.Body>
         </Card>
         <Card className="border-primary g-col-6">
@@ -432,28 +432,28 @@ const Status = observer(() => {
             status={getStatusProps(getPanelStatus.misc(systemStore.flameSensorStatus, systemStore.uartStatus, serialStore.connectionState))}
           />
           <Card.Body>
-            <p className="d-flex align-items-center gap-1">
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">Flame Sensor:</strong>
               <span className="flex-grow-1 fw-light">{systemStore.flameSensorStatus}</span>
               {getFlameSensorBadge(systemStore.flameSensorStatus)}
-            </p>
-            <p className="d-flex align-items-center gap-1">
+            </div>
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">Software interlock:</strong>
               <span className="flex-grow-1 fw-light">
                 {laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
               </span>
               {getInterlockBadge(laserStore.interlock)}
-            </p>
-            <p className="d-flex align-items-center gap-1">
+            </div>
+            <div className="d-flex align-items-center gap-1 mb-3">
               <strong className="text-nowrap">UART#1 Status:</strong>
               <span className="flex-grow-1 fw-light">{systemStore.uartStatus}</span>
               {getUartStatusBadge(systemStore.uartStatus)}
-            </p>
-            <p className="d-flex align-items-center gap-1">
+            </div>
+            <div className="d-flex align-items-center gap-1">
               <strong className="text-nowrap">UART#2 Status:</strong>
               <span className="flex-grow-1 fw-light">{(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}</span>
               {getSerialConnectionBadge(serialStore.connectionState)}
-            </p>
+            </div>
           </Card.Body>
         </Card>
 
