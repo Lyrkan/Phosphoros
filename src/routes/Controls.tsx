@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import CardHeader from "../components/CardHeader";
 import AxisControl from "../components/AxisControl";
+import ToggleControl from "../components/ToggleControl";
 import { useStore } from "../stores/RootStore";
 import { useCommandTracking } from '../contexts/CommandTrackingContext';
 import { useSerialService } from '../contexts/SerialServiceContext';
@@ -37,10 +38,6 @@ const Controls = observer(() => {
 
   const handleDisableSteppers = async () => {
     await sendCommand('$MD');
-  };
-
-  const handleToggleButtonBlur = (e: React.MouseEvent | React.TouchEvent) => {
-    (e.currentTarget as HTMLElement).blur();
   };
 
   const handleRelayToggle = async (relay: keyof RelaysSetPayload, newValue: boolean) => {
@@ -129,55 +126,42 @@ const Controls = observer(() => {
       </Card>
       <Card className="border-primary g-col-12">
         <CardHeader icon="bi-toggles" title="Toggles" />
-        <Card.Body className="d-flex flex-column justify-content-between">
-          <Row className="flex-grow-1">
-            <Col xs={6} className="d-flex justify-content-center mb-2">
-              <Button
-                variant="primary"
-                onClick={() => handleRelayToggle('interlock', !laserStore.interlock)}
-                onMouseUp={handleToggleButtonBlur}
-                onTouchEnd={handleToggleButtonBlur}
-                className="w-100 h-100"
-                active={laserStore.interlock === true}
-              >
-                <i className={`${laserStore.interlock ? 'bi-shield-lock-fill text-white' : 'bi-shield-lock text-muted'} me-2`}></i> Interlock
-              </Button>
+        <Card.Body>
+          <Row>
+            <Col xs={6} className="mb-3">
+              <ToggleControl
+                icon="bi-shield-lock"
+                activeIcon="bi-shield-lock-fill"
+                label="Interlock"
+                isActive={laserStore.interlock === true}
+                onChange={(newValue) => handleRelayToggle('interlock', newValue)}
+              />
             </Col>
-            <Col xs={6} className="d-flex justify-content-center mb-2">
-              <Button
-                variant="primary"
-                onClick={() => handleRelayToggle('lights', !laserStore.lights)}
-                onMouseUp={handleToggleButtonBlur}
-                onTouchEnd={handleToggleButtonBlur}
-                className="w-100 h-100"
-                active={laserStore.lights === true}
-              >
-                <i className={`${laserStore.lights ? 'bi-lightbulb-fill text-white' : 'bi-lightbulb text-muted'} me-2`}></i> Lights
-              </Button>
+            <Col xs={6} className="mb-3">
+              <ToggleControl
+                icon="bi-lightbulb"
+                activeIcon="bi-lightbulb-fill"
+                label="Lights"
+                isActive={laserStore.lights === true}
+                onChange={(newValue) => handleRelayToggle('lights', newValue)}
+              />
             </Col>
-            <Col xs={6} className="d-flex justify-content-center mb-2">
-              <Button
-                variant="primary"
-                onClick={() => handleRelayToggle('air_assist', !laserStore.airAssist)}
-                onMouseUp={handleToggleButtonBlur}
-                onTouchEnd={handleToggleButtonBlur}
-                className="w-100 h-100"
-                active={laserStore.airAssist === true}
-              >
-                <i className={`${laserStore.airAssist ? 'bi-wind text-white' : 'bi-wind text-muted'} me-2`}></i> Air Assist
-              </Button>
+            <Col xs={6}>
+              <ToggleControl
+                icon="bi-wind"
+                label="Air Assist"
+                isActive={laserStore.airAssist === true}
+                onChange={(newValue) => handleRelayToggle('air_assist', newValue)}
+              />
             </Col>
-            <Col xs={6} className="d-flex justify-content-center mb-2">
-              <Button
-                variant="primary"
-                onClick={() => handleRelayToggle('beam_preview', !laserStore.beamPreview)}
-                onMouseUp={handleToggleButtonBlur}
-                onTouchEnd={handleToggleButtonBlur}
-                className="w-100 h-100"
-                active={laserStore.beamPreview === true}
-              >
-                <i className={`${laserStore.beamPreview ? 'bi-eye-fill text-white' : 'bi-eye text-muted'} me-2`}></i> Beam Preview
-              </Button>
+            <Col xs={6}>
+              <ToggleControl
+                icon="bi-eye"
+                activeIcon="bi-eye-fill"
+                label="Beam Preview"
+                isActive={laserStore.beamPreview === true}
+                onChange={(newValue) => handleRelayToggle('beam_preview', newValue)}
+              />
             </Col>
           </Row>
         </Card.Body>
