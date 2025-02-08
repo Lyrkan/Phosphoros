@@ -24,7 +24,7 @@ const cardHeaderStyle = (variant: string) => ({
 export default function CardHeader({ icon, title, status, note, extra }: CardHeaderProps) {
   return (
     <Card.Header className="border-primary text-white" style={cardHeaderStyle(status?.variant || 'primary')}>
-      <i className={`bi ${icon}`}></i>
+      <i data-testid="header-icon" className={`bi ${icon}`}></i>
       <span>{title}</span>
 
       { extra }

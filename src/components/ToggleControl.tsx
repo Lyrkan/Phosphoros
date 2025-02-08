@@ -45,7 +45,7 @@ const ToggleControl = observer(({
       onClick={handleClick}
       role="button"
     >
-        <i className={`${isActive ? (activeIcon ?? icon) : icon}`}></i>
+        <i data-testid="toggle-icon" className={`${isActive ? (activeIcon ?? icon) : icon}`}></i>
         <span>{label}</span>
     </div>
   );

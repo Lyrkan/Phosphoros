@@ -68,7 +68,7 @@ const MetricProgressBar = ({ label, value, unit, min, max, variant = 'primary', 
             now={value}
             variant={variant}
           />
-          {onClick && <i className="bi bi-search" style={searchIconStyle}></i>}
+          {onClick && <i data-testid="search-icon" className="bi bi-search" style={searchIconStyle}></i>}
         </div>
       </Col>
     </Row>
