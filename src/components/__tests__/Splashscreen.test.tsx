@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { act } from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SerialServiceContextProvider } from '../../contexts/SerialServiceContext';
 import { useStore } from '../../stores/RootStore';
 import { UartStatus } from '../../types/Stores';
