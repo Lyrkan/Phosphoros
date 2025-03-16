@@ -94,9 +94,9 @@ describe('SerialStore', () => {
         store.addMessage(`Message ${i}`);
       }
 
-      expect(store.messages).toHaveLength(1000); // MAX_MESSAGES constant
-      expect(store.messages[0].text).toBe('Message 100');
-      expect(store.messages[999].text).toBe('Message 1099');
+      expect(store.messages).toHaveLength(250); // MAX_MESSAGES constant
+      expect(store.messages[0].text).toBe('Message 850');
+      expect(store.messages[249].text).toBe('Message 1099');
     });
 
     it('should clear messages', () => {

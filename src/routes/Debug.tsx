@@ -9,7 +9,7 @@ import { OutgoingMessageType } from "../types/Messages";
 import { MESSAGE_RX_PREFIX, MESSAGE_TX_PREFIX, MESSAGE_ERROR_PREFIX } from "../services/SerialService";
 import { MessageFilterId } from "../stores/DebugStore";
 
-const MAX_DISPLAYED_MESSAGES = 100;
+const MAX_DISPLAYED_MESSAGES = 50;
 
 export default observer(function Debug() {
   const { serialStore, debugStore } = useStore();
@@ -91,6 +91,54 @@ export default observer(function Debug() {
     return activeCount === totalCount ? 'All' : `${activeCount}/${totalCount}`;
   };
 
+  const messageStyles = {
+    base: {
+      fontFamily: 'monospace',
+      fontSize: '0.875rem',
+      lineHeight: 1.4,
+      margin: '1px 0',
+      padding: '1px 4px',
+      borderRadius: '2px',
+      display: 'flex',
+      alignItems: 'baseline'
+    },
+    rx: {
+      color: 'var(--bs-success)',
+      backgroundColor: 'var(--bs-success-bg-subtle)',
+      borderLeft: '2px solid var(--bs-success)'
+    },
+    tx: {
+      color: 'var(--bs-info)',
+      backgroundColor: 'var(--bs-info-bg-subtle)',
+      borderLeft: '2px solid var(--bs-info)',
+      fontWeight: 500
+    },
+    error: {
+      color: 'var(--bs-danger)',
+      backgroundColor: 'var(--bs-danger-bg-subtle)',
+      borderLeft: '2px solid var(--bs-danger)'
+    },
+    default: {
+      color: 'var(--bs-secondary)',
+      backgroundColor: 'var(--bs-secondary-bg-subtle)',
+      borderLeft: '2px solid var(--bs-secondary)'
+    },
+    timestamp: {
+      color: 'var(--bs-secondary)',
+      fontSize: '0.8125rem',
+      marginRight: '8px'
+    },
+    icon: {
+      marginRight: '8px',
+      fontSize: '0.75rem',
+      width: '16px',
+      textAlign: 'center'
+    },
+    content: {
+      flex: 1
+    }
+  } as const;
+
   return (
     <Card className="border-primary flex-grow-1 m-4 mt-0">
       <CardHeader
@@ -156,11 +204,25 @@ export default observer(function Debug() {
         className="mb-0"
         style={{ maxHeight: '500px', overflow: 'auto' }}
       >
-        {filteredMessages.map((msg, index) => (
-          <div className={`message-${getMessageType(msg.text)}`} key={index}>
-            <span className="text-muted">[{formatTimestamp(msg.timestamp)}]</span> {msg.text}
-          </div>
-        ))}
+        {filteredMessages.map((msg, index) => {
+          const type = getMessageType(msg.text);
+          const icon = type === 'rx' ? 'bi-arrow-down-short'
+            : type === 'tx' ? 'bi-arrow-up-short'
+            : type === 'error' ? 'bi-exclamation-triangle-fill'
+            : 'bi-info-circle';
+          const typeStyle = type === 'rx' ? messageStyles.rx
+            : type === 'tx' ? messageStyles.tx
+            : type === 'error' ? messageStyles.error
+            : messageStyles.default;
+
+          return (
+            <div style={{ ...messageStyles.base, ...typeStyle }} key={index}>
+              <span style={messageStyles.timestamp}>[{formatTimestamp(msg.timestamp)}]</span>
+              <i className={`bi ${icon}`} style={messageStyles.icon} />
+              <span style={messageStyles.content}>{msg.text}</span>
+            </div>
+          );
+        })}
       </Card.Body>
       <Card.Footer>
         <Form onSubmit={handleSubmit}>

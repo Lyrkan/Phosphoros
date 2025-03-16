@@ -6,7 +6,7 @@ interface SerialMessage {
   text: string;
 }
 
-const MAX_MESSAGES = 1000;
+const MAX_MESSAGES = 250;
 
 export class SerialStore {
   private _connectionState: UartStatus = UartStatus.Disconnected;
