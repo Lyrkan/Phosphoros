@@ -22,9 +22,6 @@ export class SerialService implements ISerialService {
   private disconnectResolve: (() => void) | null = null;
 
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
-    // Try to connect on startup
-    // This will only work if there is an already known port
-    this.connect(true);
   }
 
   async connect(ignoreError = false) {
@@ -118,6 +115,10 @@ export class SerialService implements ISerialService {
       this.disconnectPromise = null;
       this.disconnectResolve = null;
     }
+  }
+
+  isConnected(): boolean {
+    return this.store.connectionState === UartStatus.Connected;
   }
 
   async sendMessage(message: OutgoingMessage) {

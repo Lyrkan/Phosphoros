@@ -102,6 +102,10 @@ export class SettingsStore {
           throw new Error('Serial service not initialized');
         }
 
+        if (!this.serialService.isConnected()) {
+          throw new Error('Serial service not connected');
+        }
+
         await this.serialService.sendCommand(
           OutgoingMessageType.SettingsSet,
           settings

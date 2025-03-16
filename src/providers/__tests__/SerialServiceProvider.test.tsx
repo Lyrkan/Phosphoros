@@ -33,6 +33,7 @@ describe('SerialServiceProvider', () => {
   const mockSerialService: jest.Mocked<ISerialService> = {
     connect: jest.fn().mockResolvedValue(undefined),
     disconnect: jest.fn().mockResolvedValue(undefined),
+    isConnected: jest.fn().mockReturnValue(true),
     sendCommand: jest.fn().mockResolvedValue({} as OutgoingMessage)
   };
 
@@ -42,7 +43,8 @@ describe('SerialServiceProvider', () => {
     // Setup mocks
     (useStore as jest.Mock).mockReturnValue(mockRootStore);
     (MessageHandlerService as jest.Mock).mockImplementation(() => ({
-      setCommandTracking: mockSetCommandTracking
+      setCommandTracking: mockSetCommandTracking,
+      handleMessage: jest.fn()
     }));
     (SerialService as jest.Mock).mockImplementation(() => mockSerialService);
     (useCommandTrackingState as jest.Mock).mockReturnValue(mockCommandTracking);

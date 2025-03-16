@@ -28,8 +28,9 @@ afterEach(() => {
 
 // Mock the serial service
 const mockSerialService = {
-  connect: jest.fn(),
+  connect: jest.fn<Promise<void>, [boolean?]>(),
   disconnect: jest.fn(),
+  isConnected: jest.fn().mockReturnValue(true),
   sendCommand: jest.fn<Promise<OutgoingMessage>, [OutgoingMessageType, unknown]>()
 };
 
@@ -60,7 +61,6 @@ describe('Splashscreen', () => {
 
   it('renders loading state initially', () => {
     renderSplashscreen();
-    expect(screen.getByText('Please connect to continue')).toBeInTheDocument();
     expect(screen.getByText('Connect')).toBeInTheDocument();
   });
 
@@ -95,10 +95,39 @@ describe('Splashscreen', () => {
     expect(screen.getByText('Connected successfully!')).toBeInTheDocument();
   });
 
+  it('shows retrieving settings state when connected but not loaded', () => {
+    (useStore as jest.Mock).mockReturnValue({
+      ...mockStore,
+      serialStore: {
+        connectionState: UartStatus.Connected,
+        error: null
+      },
+      settingsStore: {
+        isLoaded: false,
+        setIsLoaded: jest.fn()
+      }
+    });
+
+    renderSplashscreen();
+    expect(screen.getByText('Retrieving settings...')).toBeInTheDocument();
+    expect(screen.getByText('Reconnect')).toBeInTheDocument();
+  });
+
   it('shows skip button after timeout', async () => {
     jest.useFakeTimers();
-    renderSplashscreen();
+    (useStore as jest.Mock).mockReturnValue({
+      ...mockStore,
+      serialStore: {
+        connectionState: UartStatus.Connected,
+        error: null
+      },
+      settingsStore: {
+        isLoaded: false,
+        setIsLoaded: jest.fn()
+      }
+    });
 
+    renderSplashscreen();
     expect(screen.queryByText('Skip Loading')).not.toBeInTheDocument();
 
     await act(async () => {
@@ -118,6 +147,19 @@ describe('Splashscreen', () => {
 
   it('handles skip button click', async () => {
     jest.useFakeTimers();
+    const mockSetIsLoaded = jest.fn();
+    (useStore as jest.Mock).mockReturnValue({
+      ...mockStore,
+      serialStore: {
+        connectionState: UartStatus.Connected,
+        error: null
+      },
+      settingsStore: {
+        isLoaded: false,
+        setIsLoaded: mockSetIsLoaded
+      }
+    });
+
     renderSplashscreen();
 
     await act(async () => {
@@ -126,7 +168,7 @@ describe('Splashscreen', () => {
 
     const skipButton = screen.getByText('Skip Loading');
     fireEvent.click(skipButton);
-    expect(mockStore.settingsStore.setIsLoaded).toHaveBeenCalledWith(true);
+    expect(mockSetIsLoaded).toHaveBeenCalledWith(true);
     jest.useRealTimers();
   });
 

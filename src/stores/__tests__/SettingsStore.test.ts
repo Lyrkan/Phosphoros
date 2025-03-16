@@ -15,6 +15,9 @@ describe('SettingsStore', () => {
     toastStore = new ToastStore();
     store = new SettingsStore(toastStore);
     mockSerialService = {
+      connect: jest.fn().mockResolvedValue(undefined),
+      disconnect: jest.fn().mockResolvedValue(undefined),
+      isConnected: jest.fn().mockReturnValue(true),
       sendCommand: jest.fn().mockResolvedValue(undefined)
     } as unknown as jest.Mocked<ISerialService>;
   });

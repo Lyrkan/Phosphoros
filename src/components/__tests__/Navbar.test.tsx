@@ -6,8 +6,9 @@ import { OutgoingMessage, OutgoingMessageType } from '../../types/Messages';
 
 // Mock the SerialService
 const mockSerialService = {
-  connect: jest.fn(),
+  connect: jest.fn<Promise<void>, [boolean?]>(),
   disconnect: jest.fn(),
+  isConnected: jest.fn().mockReturnValue(true),
   sendCommand: jest.fn<Promise<OutgoingMessage>, [OutgoingMessageType, unknown]>()
 };
 

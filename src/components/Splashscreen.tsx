@@ -135,25 +135,14 @@ const Splashscreen = observer(() => {
             padding: '1rem'
           }}
         >
-          <p>Please connect to continue</p>
           <Button
-            variant="primary"
+            variant="info"
             onClick={handleConnect}
             className="mb-2"
           >
+            <i className="bi bi-rocket-takeoff me-2"></i>
             Connect
           </Button>
-          {showSkip && (
-            <div>
-              <Button
-                variant="link"
-                onClick={handleSkip}
-                className="text-white"
-              >
-                Skip Loading
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
