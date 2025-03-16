@@ -7,6 +7,7 @@ interface AxisControlProps {
   onHome: () => void;
   increments?: number[];
   disabled?: boolean;
+  className?: string;
 }
 
 export default function AxisControl({
@@ -15,14 +16,15 @@ export default function AxisControl({
   onMove,
   onHome,
   increments = [0.1, 1, 10, 100],
-  disabled = false
+  disabled = false,
+  className = '',
 }: AxisControlProps) {
   // Generate negative increments by mapping the positive ones
   const negativeIncrements = [...increments].reverse().map(n => -n);
   const positiveIncrements = increments;
 
   return (
-    <Row className="mb-3 align-items-center">
+    <Row className={`align-items-center ${className}`}>
       <Col xs={3}>
         <strong>{axis} axis:</strong>{' '}
         <span className="font-monospace" style={{ display: 'inline-block', width: '7ch', textAlign: 'right' }}>
@@ -37,7 +39,7 @@ export default function AxisControl({
               key={increment}
               variant="primary"
               onClick={() => onMove(increment)}
-              style={{ width: '4.5rem', whiteSpace: 'nowrap', fontSize: '0.85rem' }}
+              style={{ width: '4.5rem', whiteSpace: 'nowrap' }}
               disabled={disabled}
             >
               {increment}
@@ -56,7 +58,7 @@ export default function AxisControl({
               key={increment}
               variant="primary"
               onClick={() => onMove(increment)}
-              style={{ width: '4.5rem', whiteSpace: 'nowrap', fontSize: '0.85rem' }}
+              style={{ width: '4.5rem', whiteSpace: 'nowrap' }}
               disabled={disabled}
             >
               +{increment}

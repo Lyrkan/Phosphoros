@@ -101,6 +101,7 @@ const Controls = observer(() => {
             </Col>
           </Row>
           <AxisControl
+            className="mb-3"
             axis="X"
             position={currentPosition.x}
             onMove={(increment) => handleAxisMove('X', increment)}
@@ -108,6 +109,7 @@ const Controls = observer(() => {
             disabled={isControlDisabled()}
           />
           <AxisControl
+            className="mb-3"
             axis="Y"
             position={currentPosition.y}
             onMove={(increment) => handleAxisMove('Y', increment)}
@@ -115,6 +117,7 @@ const Controls = observer(() => {
             disabled={isControlDisabled()}
           />
           <AxisControl
+            className="mb-0"
             axis="Z"
             position={currentPosition.z}
             onMove={(increment) => handleAxisMove('Z', increment)}
