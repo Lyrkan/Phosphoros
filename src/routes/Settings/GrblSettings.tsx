@@ -13,7 +13,7 @@ export default observer(function GrblSettings() {
         <Card.Text as="div">
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Jog Speed (mm/min)</Form.Label>
+              <Form.Label>Jog Speed (mm/s)</Form.Label>
               <Form.Control
                 type="number"
                 value={settings.grbl.jog_speed ?? ''}
