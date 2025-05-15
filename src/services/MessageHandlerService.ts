@@ -67,7 +67,7 @@ export class MessageHandlerService implements IMessageHandlerService {
     // Update laser store relays
     laserStore.setInterlock(payload.relays.interlock);
     laserStore.setLights(payload.relays.lights);
-    laserStore.setBeamPreview(payload.relays.beam_preview);
+    laserStore.setAccessory(payload.relays.accessory);
     laserStore.setAirAssist(payload.relays.air_assist);
   }
 

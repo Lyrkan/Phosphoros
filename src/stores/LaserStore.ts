@@ -24,7 +24,7 @@ export class LaserStore {
   private _interlock?: boolean;
   private _lights?: boolean;
   private _airAssist?: boolean;
-  private _beamPreview?: boolean;
+  private _accessory?: boolean;
 
   private _activePins: ActivePins = {
     x: false,
@@ -77,8 +77,8 @@ export class LaserStore {
     return this._airAssist;
   }
 
-  get beamPreview() {
-    return this._beamPreview;
+  get accessory() {
+    return this._accessory;
   }
 
   get activePins(): Readonly<ActivePins> {
@@ -109,8 +109,8 @@ export class LaserStore {
     this._lights = value;
   });
 
-  setBeamPreview = action((value: boolean) => {
-    this._beamPreview = value;
+  setAccessory = action((value: boolean) => {
+    this._accessory = value;
   });
 
   setAirAssist = action((value: boolean) => {

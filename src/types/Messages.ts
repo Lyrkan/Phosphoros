@@ -37,7 +37,7 @@ export interface StatusReportPayload {
     interlock: boolean;
     alarm: boolean;
     lights: boolean;
-    beam_preview: boolean;
+    accessory: boolean;
     air_assist: boolean;
   };
   uart: number;
@@ -96,7 +96,7 @@ export interface RelaysSetPayload {
   interlock?: boolean;
   air_assist?: boolean;
   lights?: boolean;
-  beam_preview?: boolean;
+  accessory?: boolean;
 }
 
 export type CommandPayloadMap = {

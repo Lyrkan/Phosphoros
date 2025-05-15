@@ -19,7 +19,7 @@ describe('LaserStore', () => {
       expect(store.interlock).toBeUndefined();
       expect(store.lights).toBeUndefined();
       expect(store.airAssist).toBeUndefined();
-      expect(store.beamPreview).toBeUndefined();
+      expect(store.accessory).toBeUndefined();
       expect(store.activePins).toEqual({
         x: false,
         y: false,
@@ -101,9 +101,9 @@ describe('LaserStore', () => {
       expect(store.airAssist).toBe(true);
     });
 
-    it('should update beam preview state', () => {
-      store.setBeamPreview(true);
-      expect(store.beamPreview).toBe(true);
+    it('should update accessory state', () => {
+      store.setAccessory(true);
+      expect(store.accessory).toBe(true);
     });
   });
 

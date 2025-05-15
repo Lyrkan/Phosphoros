@@ -39,7 +39,7 @@ describe('MessageHandlerService', () => {
             interlock: true,
             alarm: false,
             lights: true,
-            beam_preview: false,
+            accessory: false,
             air_assist: false
           },
           uart: 1
@@ -73,7 +73,7 @@ describe('MessageHandlerService', () => {
             interlock: true,
             alarm: false,
             lights: true,
-            beam_preview: false,
+            accessory: false,
             air_assist: true
           },
           uart: 1
@@ -82,7 +82,7 @@ describe('MessageHandlerService', () => {
 
       expect(rootStore.laserStore.interlock).toBe(true);
       expect(rootStore.laserStore.lights).toBe(true);
-      expect(rootStore.laserStore.beamPreview).toBe(false);
+      expect(rootStore.laserStore.accessory).toBe(false);
       expect(rootStore.laserStore.airAssist).toBe(true);
     });
 
@@ -107,7 +107,7 @@ describe('MessageHandlerService', () => {
             interlock: false,
             alarm: false,
             lights: false,
-            beam_preview: false,
+            accessory: false,
             air_assist: false
           },
           uart: 1
@@ -139,7 +139,7 @@ describe('MessageHandlerService', () => {
             interlock: false,
             alarm: false,
             lights: false,
-            beam_preview: false,
+            accessory: false,
             air_assist: false
           },
           uart: 1

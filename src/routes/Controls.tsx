@@ -159,11 +159,11 @@ const Controls = observer(() => {
             </Col>
             <Col xs={6}>
               <ToggleControl
-                icon="bi-eye"
-                activeIcon="bi-eye-fill"
-                label="Beam Preview"
-                isActive={laserStore.beamPreview === true}
-                onChange={(newValue) => handleRelayToggle('beam_preview', newValue)}
+                icon="bi-plug"
+                activeIcon="bi-plug-fill"
+                label="Accessory"
+                isActive={laserStore.accessory === true}
+                onChange={(newValue) => handleRelayToggle('accessory', newValue)}
               />
             </Col>
           </Row>
