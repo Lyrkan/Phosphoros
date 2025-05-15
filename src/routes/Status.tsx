@@ -235,6 +235,37 @@ const Status = observer(() => {
     settingsStore.probes.cooling?.temp?.max
   ]);
 
+  const getConnectionStatusBadge = (
+    uartStatus: UartStatus,
+    connectionState: UartStatus
+  ): ReactElement|null => {
+    if (uartStatus === UartStatus.Connected && connectionState === UartStatus.Connected) {
+      return <Badge bg="success">OK</Badge>;
+    }
+    if (uartStatus === UartStatus.Unknown || connectionState === UartStatus.Unknown) {
+      return <Badge bg="warning">Warning</Badge>;
+    }
+    return <Badge bg="danger">Problem</Badge>;
+  };
+
+  const getConnectionStatusText = (
+    uartStatus: UartStatus,
+    connectionState: UartStatus
+  ): string => {
+    if (uartStatus === UartStatus.Connected && connectionState === UartStatus.Connected) {
+      return "All systems connected";
+    }
+
+    if (connectionState !== UartStatus.Connected) {
+      if (uartStatus !== UartStatus.Connected) {
+        return "No connections established";
+      }
+      return "K40 Control Panel unreacheable";
+    }
+
+    return "FluidNC unreacheable";
+  };
+
   return (
       <div className="flex-grow-1 grid m-4 mt-0" style={gridStyle}>
         <Card className="border-primary g-col-6">
@@ -350,16 +381,12 @@ const Status = observer(() => {
               value={laserStore.interlock === undefined ? 'Unknown' : (laserStore.interlock ? 'Enabled' : 'Disabled')}
               badge={getInterlockBadge(laserStore.interlock)}
             />
+
             <StatusItem
-              label="UART#1 Status"
-              value={systemStore.uartStatus}
-              badge={getUartStatusBadge(systemStore.uartStatus)}
-            />
-            <StatusItem
-              label="UART#2 Status"
-              value={(serialStore.connectionState === UartStatus.Error && serialStore.error) ? serialStore.error : serialStore.connectionState}
-              badge={getSerialConnectionBadge(serialStore.connectionState)}
-              className=""
+              label="Connection Status"
+              value={getConnectionStatusText(systemStore.uartStatus, serialStore.connectionState)}
+              badge={getConnectionStatusBadge(systemStore.uartStatus, serialStore.connectionState)}
+              marquee={true}
             />
           </Card.Body>
         </Card>
