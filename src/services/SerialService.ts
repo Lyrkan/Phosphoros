@@ -56,12 +56,22 @@ export class SerialService implements ISerialService {
         console.warn('Serial port is already open');
       }
 
+      if (!port.readable) {
+        this.handleError('Serial port is not readable', ignoreError);
+        return;
+      }
+
+      // Set the port and cancel read flag
       this.port = port;
       this.store.setPort(port);
+      this.cancelRead = false;
+
+      // Start the reading loop in the background
+      this.runReadingLoop();
+
+      // Set the connection state to connected
       this.store.setConnectionState(UartStatus.Connected);
       this.store.setError(null);
-
-      this.startReading();
 
       // Request initial settings after successful connection
       await this.sendCommand(OutgoingMessageType.SettingsGet);
@@ -151,14 +161,8 @@ export class SerialService implements ISerialService {
     return nextId;
   }
 
-  private async startReading() {
-    if (!this.port?.readable) {
-      this.handleError('Serial port is not readable');
-      return;
-    }
-
-    this.cancelRead = false;
-    while (this.port.readable && !this.cancelRead) {
+  private async runReadingLoop() {
+    while (this.port?.readable && !this.cancelRead) {
       const reader = this.port.readable.getReader();
 
       try {
@@ -180,7 +184,7 @@ export class SerialService implements ISerialService {
                 this.messageHandler.handleMessage(parsedMessage);
                 this.store.addMessage(`${MESSAGE_RX_PREFIX} ${line}`);
               } catch (e) {
-                console.warn('Invalid JSON received:', line);
+                this.store.addMessage(`${MESSAGE_ERROR_PREFIX} Invalid JSON received: ${line}`);
               }
             }
           }
@@ -194,9 +198,12 @@ export class SerialService implements ISerialService {
       }
     }
 
-    await this.port.close();
+    // Clean up when the reading loop ends
+    if (this.port) {
+      await this.port.close();
+      this.port = null;
+    }
 
-    this.port = null;
     this.store.setPort(null);
     this.store.setConnectionState(UartStatus.Disconnected);
 
