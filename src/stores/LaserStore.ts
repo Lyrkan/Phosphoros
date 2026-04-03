@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { LaserState, AlarmState, PositionType , Position } from "../types/Stores";
 
 export interface ActivePins {
@@ -85,39 +85,39 @@ export class LaserStore {
     return this._activePins;
   }
 
-  setState = action((state: LaserState) => {
+  setState = (state: LaserState) => {
     this._currentState = state;
-  });
+  };
 
-  setAlarm = action((alarm: AlarmState) => {
+  setAlarm = (alarm: AlarmState) => {
     this._currentAlarm = alarm;
-  });
+  };
 
-  setSpeed = action((speed: number) => {
+  setSpeed = (speed: number) => {
     this._speed = speed;
-  });
+  };
 
-  setWorkPosition = action((position: Position) => {
+  setWorkPosition = (position: Position) => {
     this._workPosition = position;
-  });
+  };
 
-  setInterlock = action((value: boolean) => {
+  setInterlock = (value: boolean) => {
     this._interlock = value;
-  });
+  };
 
-  setLights = action((value: boolean) => {
+  setLights = (value: boolean) => {
     this._lights = value;
-  });
+  };
 
-  setAccessory = action((value: boolean) => {
+  setAccessory = (value: boolean) => {
     this._accessory = value;
-  });
+  };
 
-  setAirAssist = action((value: boolean) => {
+  setAirAssist = (value: boolean) => {
     this._airAssist = value;
-  });
+  };
 
-  setPosition = action((type: PositionType, position: Position) => {
+  setPosition = (type: PositionType, position: Position) => {
     switch (type) {
       case PositionType.Work:
         this._workPosition = position;
@@ -129,9 +129,9 @@ export class LaserStore {
         this._workOffset = position;
         break;
     }
-  });
+  };
 
-  setActivePins = action((pins: Partial<ActivePins>) => {
+  setActivePins = (pins: Partial<ActivePins>) => {
     this._activePins = { ...this._activePins, ...pins };
-  });
+  };
 }

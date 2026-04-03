@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useMemo } from 'react';
 import { useStore } from '../stores/RootStore';
 import { MessageHandlerService } from '../services/MessageHandlerService';
 import { SerialService } from '../services/SerialService';
@@ -46,11 +46,15 @@ function CommandTrackingInitializer({
 
 export function SerialServiceProvider({ children }: { children: ReactNode }) {
   const rootStore = useStore();
-  const messageHandler = new MessageHandlerService(rootStore);
-  const serialService = new SerialService(rootStore.serialStore, messageHandler);
+  const messageHandler = useMemo(() => new MessageHandlerService(rootStore), [rootStore]);
+  const serialService = useMemo(
+    () => new SerialService(rootStore.serialStore, messageHandler),
+    [rootStore.serialStore, messageHandler]
+  );
 
-  // Set the serial service in the settings store
-  rootStore.settingsStore.setSerialService(serialService);
+  useEffect(() => {
+    rootStore.settingsStore.setSerialService(serialService);
+  }, [rootStore.settingsStore, serialService]);
 
   return (
     <SerialServiceComponent

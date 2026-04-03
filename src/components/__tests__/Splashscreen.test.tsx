@@ -4,6 +4,7 @@ import { SerialServiceContextProvider } from '../../contexts/SerialServiceContex
 import { useStore } from '../../stores/RootStore';
 import { UartStatus } from '../../types/Stores';
 import { OutgoingMessage, OutgoingMessageType } from '../../types/Messages';
+import { ConnectOptions } from '../../services/interfaces/ISerialService';
 import Splashscreen from '../Splashscreen';
 
 // Mock the stores
@@ -28,7 +29,7 @@ afterEach(() => {
 
 // Mock the serial service
 const mockSerialService = {
-  connect: jest.fn<Promise<void>, [boolean?]>(),
+  connect: jest.fn<Promise<void>, [ConnectOptions?]>(),
   disconnect: jest.fn(),
   isConnected: jest.fn().mockReturnValue(true),
   sendCommand: jest.fn<Promise<OutgoingMessage>, [OutgoingMessageType, unknown]>()
@@ -138,11 +139,27 @@ describe('Splashscreen', () => {
     jest.useRealTimers();
   });
 
-  it('handles connect button click', () => {
+  it('shows connecting state with spinner', () => {
+    (useStore as jest.Mock).mockReturnValue({
+      ...mockStore,
+      serialStore: {
+        connectionState: UartStatus.Connecting,
+        error: null
+      }
+    });
+
+    renderSplashscreen();
+    expect(screen.getByText('Connecting...')).toBeInTheDocument();
+  });
+
+  it('handles connect button click with retry options', () => {
     renderSplashscreen();
     const connectButton = screen.getByText('Connect');
     fireEvent.click(connectButton);
-    expect(mockSerialService.connect).toHaveBeenCalled();
+    expect(mockSerialService.connect).toHaveBeenCalledWith({
+      maxRetries: 5,
+      retryDelayMs: 1000,
+    });
   });
 
   it('handles skip button click', async () => {

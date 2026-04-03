@@ -117,6 +117,8 @@ const CoolingHistoryModal = observer(({ show, onHide, metric }: Props) => {
 
     // Helper to draw a zone from start to end index
     const drawZone = (startIdx: number, endIdx: number) => {
+      if (data.length < 2) return;
+
       // Calculate positions based on chart area and data indices
       const totalPoints = data.length - 1; // -1 because we want gaps between points
       const pointWidth = (chartArea.right - chartArea.left) / totalPoints;

@@ -54,6 +54,8 @@ export default observer(function Debug() {
     switch (serialStore.connectionState) {
       case UartStatus.Connected:
         return "success";
+      case UartStatus.Connecting:
+        return "info";
       case UartStatus.Error:
         return "danger";
       default:

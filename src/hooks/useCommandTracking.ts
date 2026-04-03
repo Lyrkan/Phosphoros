@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useStore } from '../stores/RootStore';
 import { GrblActionPayload, OutgoingMessageBase, OutgoingMessageType } from '../types/Messages';
 import { useSerialService } from '../contexts/SerialServiceContext';
@@ -75,9 +75,10 @@ export function useCommandTrackingState() {
       };
       updateHasPendingCommands();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       toastStore.show(
         'Command Failed',
-        `Failed to send command: ${error.message}`,
+        `Failed to send command: ${message}`,
         'danger'
       );
     }
@@ -98,9 +99,9 @@ export function useCommandTrackingState() {
     clearCommand(id);
   }, [clearCommand, toastStore]);
 
-  return {
+  return useMemo(() => ({
     sendCommand,
     handleCommandAck,
     hasPendingCommands
-  };
+  }), [sendCommand, handleCommandAck, hasPendingCommands]);
 }

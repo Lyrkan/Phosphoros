@@ -30,6 +30,20 @@ describe('RouterError', () => {
     expect(screen.getByText('Page not found')).toBeInTheDocument();
   });
 
+  it('renders Error instance message', () => {
+    (useRouteError as jest.Mock).mockReturnValue(new Error('Something broke'));
+
+    render(<RouterError />);
+    expect(screen.getByText('Something broke')).toBeInTheDocument();
+  });
+
+  it('renders string errors', () => {
+    (useRouteError as jest.Mock).mockReturnValue('raw error string');
+
+    render(<RouterError />);
+    expect(screen.getByText('raw error string')).toBeInTheDocument();
+  });
+
   it('renders error icon', () => {
     (useRouteError as jest.Mock).mockReturnValue({
       message: 'Error'

@@ -38,7 +38,7 @@ const router = createMemoryRouter([
           { path: 'relays', element: <RelaysSettings /> },
         ]
       },
-      { path: '/debug', element: <Debug/>},
+      { path: 'debug', element: <Debug/>},
     ]
   },
 ]);

@@ -18,7 +18,7 @@ export enum LaserState {
 export enum AlarmState {
   Unknown = "Invalid/unknown Grbl alarm",
   NoAlarm = "No Alarm",
-  HardLimit = "ard limit triggered",
+  HardLimit = "Hard limit triggered",
   SoftLimit = "G-code motion target exceeds machine travel",
   AbortCycle = "Reset while in motion, re-homing is highly recommended",
   ProbeFailInitial = "Probe fail: The probe is not in the expected initial state before starting probe cycle",
@@ -49,6 +49,7 @@ export enum FlameSensorStatus {
 
 export enum UartStatus {
   Unknown = "Unknown",
+  Connecting = "Connecting",
   Connected = "Connected",
   Disconnected = "Disconnected",
   Error = "Error",

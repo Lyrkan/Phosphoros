@@ -1,11 +1,13 @@
 import { UartStatus } from '../types/Stores';
 import { SerialStore } from '../stores/SerialStore';
 import { MessageHandlerService } from './MessageHandlerService';
-import { ISerialService } from './interfaces/ISerialService';
+import { ConnectOptions, ISerialService } from './interfaces/ISerialService';
 import { OutgoingMessage, OutgoingMessageType, GrblActionPayload, SettingsPayload, CommandPayloadMap, RelaysSetPayload } from '../types/Messages';
 
 const MAX_COMMAND_ID = 999999;
 const DISCONNECT_TIMEOUT_MS = 5000;
+const DEFAULT_MAX_RETRIES = 0;
+const DEFAULT_RETRY_DELAY_MS = 1000;
 
 export const MESSAGE_RX_PREFIX = 'RX:';
 export const MESSAGE_TX_PREFIX = 'TX:';
@@ -13,6 +15,7 @@ export const MESSAGE_ERROR_PREFIX = 'Error:';
 
 export class SerialService implements ISerialService {
   private port: SerialPort | null = null;
+  private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   private decoder = new TextDecoder();
   private encoder = new TextEncoder();
   private readBuffer = '';
@@ -24,41 +27,65 @@ export class SerialService implements ISerialService {
   constructor(private store: SerialStore, private messageHandler: MessageHandlerService) {
   }
 
-  async connect(ignoreError = false) {
+  async connect(options: ConnectOptions = {}) {
+    const {
+      maxRetries = DEFAULT_MAX_RETRIES,
+      retryDelayMs = DEFAULT_RETRY_DELAY_MS,
+    } = options;
+
+    if (this.store.connectionState === UartStatus.Connecting) {
+      return;
+    }
+
     try {
-      // Disconnect if already connected
-      if (this.store.connectionState === UartStatus.Connected) {
-        await this.disconnect();
+      this.store.setConnectionState(UartStatus.Connecting);
+      this.store.setError(null);
+
+      // Await any in-progress disconnect before proceeding
+      if (this.disconnectPromise) {
+        try { await this.disconnectPromise; } catch { /* timeout is fine */ }
       }
 
-      // Try to get the first available port
+      // Disconnect if the port is still open from a previous session
+      if (this.port?.readable) {
+        await this.disconnect();
+        this.store.setConnectionState(UartStatus.Connecting);
+      }
+
+      // Try to get a port, retrying if the hardware isn't enumerated yet
+      let port: SerialPort | null = null;
+
       const ports = await navigator.serial.getPorts();
-      let port: SerialPort;
       if (ports.length > 0) {
         port = ports[0];
       } else {
-        try {
-          port = await navigator.serial.requestPort();
-        } catch (e) {
-          this.handleError('No compatible serial port found', ignoreError);
-          return;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            port = await navigator.serial.requestPort();
+            break;
+          } catch {
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, retryDelayMs * (attempt + 1)));
+            }
+          }
         }
+      }
+
+      if (!port) {
+        throw new Error('No compatible serial port found');
       }
 
       try {
         await port.open({ baudRate: 115200 });
       } catch (e) {
-        // Check if the error is because the port is already open
         if (!(e instanceof DOMException && e.name === 'InvalidStateError')) {
-          this.handleError('Failed to open serial port', ignoreError);
-          return;
+          throw new Error('Failed to open serial port');
         }
         console.warn('Serial port is already open');
       }
 
       if (!port.readable) {
-        this.handleError('Serial port is not readable', ignoreError);
-        return;
+        throw new Error('Serial port is not readable');
       }
 
       // Set the port and cancel read flag
@@ -67,7 +94,10 @@ export class SerialService implements ISerialService {
       this.cancelRead = false;
 
       // Start the reading loop in the background
-      this.runReadingLoop();
+      this.runReadingLoop().catch((err) => {
+        console.error('Reading loop failed:', err);
+        this.store.setConnectionState(UartStatus.Error);
+      });
 
       // Set the connection state to connected
       this.store.setConnectionState(UartStatus.Connected);
@@ -76,7 +106,8 @@ export class SerialService implements ISerialService {
       // Request initial settings after successful connection
       await this.sendCommand(OutgoingMessageType.SettingsGet);
     } catch (error) {
-      this.handleError('Failed to connect to serial port', ignoreError);
+      const message = error instanceof Error ? error.message : 'Failed to connect to serial port';
+      this.handleError(message);
     }
   }
 
@@ -99,9 +130,8 @@ export class SerialService implements ISerialService {
       ]);
     }
 
-    const reader = this.port.readable.getReader();
     this.cancelRead = true;
-    reader.cancel();
+    this.reader?.cancel();
 
     try {
       // Wait for the port to be fully closed
@@ -116,6 +146,7 @@ export class SerialService implements ISerialService {
         }
 
         this.port = null;
+        this.readBuffer = '';
         this.store.setPort(null);
         this.store.setConnectionState(UartStatus.Disconnected);
       }
@@ -163,14 +194,14 @@ export class SerialService implements ISerialService {
 
   private async runReadingLoop() {
     while (this.port?.readable && !this.cancelRead) {
-      const reader = this.port.readable.getReader();
+      this.reader = this.port.readable.getReader();
 
       try {
         for(;;) {
-          const { value, done } = await reader.read();
+          const { value, done } = await this.reader.read();
           if (done) break;
 
-          this.readBuffer += this.decoder.decode(value);
+          this.readBuffer += this.decoder.decode(value, { stream: true });
           const lines = this.readBuffer.split('\n');
 
           // Keep the last incomplete line in the buffer
@@ -181,6 +212,11 @@ export class SerialService implements ISerialService {
             if (line.trim()) {
               try {
                 const parsedMessage = JSON.parse(line);
+                if (typeof parsedMessage !== 'object' || parsedMessage === null ||
+                    !('t' in parsedMessage) || !('p' in parsedMessage)) {
+                  this.store.addMessage(`${MESSAGE_ERROR_PREFIX} Malformed message: ${line}`);
+                  continue;
+                }
                 this.messageHandler.handleMessage(parsedMessage);
                 this.store.addMessage(`${MESSAGE_RX_PREFIX} ${line}`);
               } catch (e) {
@@ -194,7 +230,9 @@ export class SerialService implements ISerialService {
         this.handleError('Error reading from serial port');
       } finally {
         this.readBuffer = '';
-        reader.releaseLock();
+        this.decoder.decode();
+        this.reader.releaseLock();
+        this.reader = null;
       }
     }
 
@@ -260,7 +298,7 @@ export class SerialService implements ISerialService {
     return message;
   }
 
-  private handleError(message: string, ignoreError = false) {
+  private handleError(message: string) {
     const error = new Error(message);
     console.error(message, error);
 
@@ -268,8 +306,6 @@ export class SerialService implements ISerialService {
     this.store.setError(message);
     this.store.addMessage(`${MESSAGE_ERROR_PREFIX} ${message}`);
 
-    if (!ignoreError) {
-      throw error;
-    }
+    throw error;
   }
 }

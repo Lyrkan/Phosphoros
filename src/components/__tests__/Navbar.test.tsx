@@ -3,10 +3,11 @@ import { MemoryRouter } from 'react-router-dom';
 import Navbar from '../Navbar';
 import { SerialServiceContextProvider } from '../../contexts/SerialServiceContext';
 import { OutgoingMessage, OutgoingMessageType } from '../../types/Messages';
+import { ConnectOptions } from '../../services/interfaces/ISerialService';
 
 // Mock the SerialService
 const mockSerialService = {
-  connect: jest.fn<Promise<void>, [boolean?]>(),
+  connect: jest.fn<Promise<void>, [ConnectOptions?]>(),
   disconnect: jest.fn(),
   isConnected: jest.fn().mockReturnValue(true),
   sendCommand: jest.fn<Promise<OutgoingMessage>, [OutgoingMessageType, unknown]>()

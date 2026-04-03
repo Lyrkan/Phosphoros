@@ -3,7 +3,8 @@ import type { Configuration } from 'webpack';
 import { rules } from './webpack.rules';
 import { plugins } from './webpack.plugins';
 
-rules.push(...[
+const rendererRules = [
+  ...rules,
   {
     test: /\.css$/,
     use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
@@ -24,11 +25,11 @@ rules.push(...[
       }
     ]
   }
-]);
+];
 
 export const rendererConfig: Configuration = {
   module: {
-    rules,
+    rules: rendererRules,
   },
   devtool: 'source-map',
   plugins,

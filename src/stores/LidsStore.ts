@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { LidState } from "../types/Stores";
 
 export class LidsStore {
@@ -17,11 +17,11 @@ export class LidsStore {
     return this._backLidState;
   }
 
-  setFrontLidState = action((state: LidState) => {
+  setFrontLidState = (state: LidState) => {
     this._frontLidState = state;
-  });
+  };
 
-  setBackLidState = action((state: LidState) => {
+  setBackLidState = (state: LidState) => {
     this._backLidState = state;
-  });
+  };
 }

@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { UartStatus } from "../types/Stores";
 
 interface SerialMessage {
@@ -36,19 +36,19 @@ export class SerialStore {
     return this._lastMessageTime;
   }
 
-  setConnectionState = action((state: UartStatus) => {
+  setConnectionState = (state: UartStatus) => {
     this._connectionState = state;
-  });
+  };
 
-  setError = action((error: string | null) => {
+  setError = (error: string | null) => {
     this._error = error;
-  });
+  };
 
-  setPort = action((port: SerialPort | null) => {
+  setPort = (port: SerialPort | null) => {
     this.port = port;
-  });
+  };
 
-  addMessage = action((text: string) => {
+  addMessage = (text: string) => {
     const timestamp = Date.now();
     this._messages.push({ timestamp, text });
     this._lastMessageTime = timestamp;
@@ -57,10 +57,10 @@ export class SerialStore {
     if (this._messages.length > MAX_MESSAGES) {
       this._messages.shift();
     }
-  });
+  };
 
-  clearMessages = action(() => {
+  clearMessages = () => {
     this._messages = [];
     this._lastMessageTime = 0;
-  });
+  };
 }

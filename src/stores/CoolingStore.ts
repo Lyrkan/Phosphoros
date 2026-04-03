@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 export class CoolingStore {
   private _inputFlow?: number;
@@ -26,19 +26,19 @@ export class CoolingStore {
     return this._outputTemperature;
   }
 
-  setInputFlow = action((value: number) => {
+  setInputFlow = (value: number) => {
     this._inputFlow = value;
-  });
+  };
 
-  setOutputFlow = action((value: number) => {
+  setOutputFlow = (value: number) => {
     this._outputFlow = value;
-  });
+  };
 
-  setInputTemperature = action((value: number) => {
+  setInputTemperature = (value: number) => {
     this._inputTemperature = value;
-  });
+  };
 
-  setOutputTemperature = action((value: number) => {
+  setOutputTemperature = (value: number) => {
     this._outputTemperature = value;
-  });
+  };
 }

@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import {
   BedSettings,
   ProbeSettings,
@@ -16,6 +16,7 @@ export class SettingsStore {
   private toastStore: ToastStore;
   private serialService: ISerialService | null = null;
   private updateTimeout: NodeJS.Timeout | null = null;
+  private pendingSettings: Partial<ControllerSettings> = {};
 
   private _bed: BedSettings = { control_mode: BedControlMode.Grbl };
   private _probes: ProbeSettings = {};
@@ -53,22 +54,23 @@ export class SettingsStore {
     return this._isLoaded;
   }
 
-  setSerialService = action((service: ISerialService) => {
+  setSerialService = (service: ISerialService) => {
     this.serialService = service;
-  });
+  };
 
   cleanup = () => {
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout);
       this.updateTimeout = null;
     }
+    this.pendingSettings = {};
   };
 
-  setIsLoaded = action((loaded: boolean) => {
+  setIsLoaded = (loaded: boolean) => {
     this._isLoaded = loaded;
-  });
+  };
 
-  updateSettings = action((settings: ControllerSettings, sendUpdate = true) => {
+  updateSettings = (settings: ControllerSettings, sendUpdate = true) => {
     if (settings.bed) {
       this._bed = this.deepMerge(this._bed, settings.bed);
     }
@@ -89,14 +91,19 @@ export class SettingsStore {
     if (sendUpdate) {
       this.debouncedSendUpdate(settings);
     }
-  });
+  };
 
   private debouncedSendUpdate = (settings: Partial<ControllerSettings>) => {
+    this.pendingSettings = this.deepMerge(this.pendingSettings, settings);
+
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout);
     }
 
     this.updateTimeout = setTimeout(async () => {
+      const toSend = this.pendingSettings;
+      this.pendingSettings = {};
+
       try {
         if (!this.serialService) {
           throw new Error('Serial service not initialized');
@@ -108,12 +115,13 @@ export class SettingsStore {
 
         await this.serialService.sendCommand(
           OutgoingMessageType.SettingsSet,
-          settings
+          toSend
         );
       } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         this.toastStore.show(
           'Settings Update Failed',
-          `Failed to send settings update to the controller: ${error.message}`,
+          `Failed to send settings update to the controller: ${message}`,
           'danger'
         );
       }

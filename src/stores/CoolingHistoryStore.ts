@@ -9,16 +9,27 @@ export enum CoolingMetric {
   OutputTemperature = 'outputTemperature'
 }
 
-interface MetricDataPoint {
+export interface MetricDataPoint {
   timestamp: number;
   value: number;
   isLaserRunning?: boolean;
 }
 
+type MetricData = Record<CoolingMetric, MetricDataPoint[]>;
+
 interface HistoryPeriod {
   duration: number;
   interval: number;
-  data: Map<CoolingMetric, MetricDataPoint[]>;
+  data: MetricData;
+}
+
+function createEmptyMetricData(): MetricData {
+  return {
+    [CoolingMetric.InputFlow]: [],
+    [CoolingMetric.OutputFlow]: [],
+    [CoolingMetric.InputTemperature]: [],
+    [CoolingMetric.OutputTemperature]: [],
+  };
 }
 
 export class CoolingHistoryStore {
@@ -29,13 +40,13 @@ export class CoolingHistoryStore {
   constructor(rootStore: RootStore) {
     this._rootStore = rootStore;
     this._periods = [
-      { duration: 60 * 1000, interval: 1000, data: new Map() },      // 1mn period, 1s interval
-      { duration: 5 * 60 * 1000, interval: 10000, data: new Map() }, // 5mn period, 10s interval
-      { duration: 60 * 60 * 1000, interval: 60000, data: new Map() } // 60mn period, 1mn interval
+      { duration: 60 * 1000, interval: 1000, data: createEmptyMetricData() },      // 1mn period, 1s interval
+      { duration: 5 * 60 * 1000, interval: 10000, data: createEmptyMetricData() }, // 5mn period, 10s interval
+      { duration: 60 * 60 * 1000, interval: 60000, data: createEmptyMetricData() } // 60mn period, 1mn interval
     ];
     this._updateIntervals = [];
 
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable(this, { getHistory: false }, { autoBind: true });
   }
 
   startTracking(): void {
@@ -43,10 +54,7 @@ export class CoolingHistoryStore {
 
     // Initialize data structures
     this._periods.forEach(period => {
-      period.data.set(CoolingMetric.InputFlow, []);
-      period.data.set(CoolingMetric.OutputFlow, []);
-      period.data.set(CoolingMetric.InputTemperature, []);
-      period.data.set(CoolingMetric.OutputTemperature, []);
+      period.data = createEmptyMetricData();
     });
 
     // Setup update intervals
@@ -77,29 +85,27 @@ export class CoolingHistoryStore {
   stopTracking(): void {
     this._updateIntervals.forEach(interval => clearInterval(interval));
     this._updateIntervals = [];
-    this._periods.forEach(period => period.data.clear());
+    this._periods.forEach(period => {
+      period.data = createEmptyMetricData();
+    });
   }
 
   private addDataPoint(metric: CoolingMetric, value: number, timestamp: number, period: HistoryPeriod, isLaserRunning: boolean): void {
-    const data = period.data.get(metric);
+    const data = period.data[metric];
     if (!data) return;
 
-    // Add new point
     data.push({ timestamp, value, isLaserRunning });
 
-    // Remove points older than the period duration
     const cutoffTime = timestamp - period.duration;
     while (data.length > 0 && data[0].timestamp < cutoffTime) {
       data.shift();
     }
   }
 
-  get getHistory() {
-    return (metric: CoolingMetric, periodIndex: number) => {
-      const period = this._periods[periodIndex];
-      if (!period) return [];
-      return period.data.get(metric) || [];
-    };
+  getHistory(metric: CoolingMetric, periodIndex: number): MetricDataPoint[] {
+    const period = this._periods[periodIndex];
+    if (!period) return [];
+    return period.data[metric] || [];
   }
 }
 

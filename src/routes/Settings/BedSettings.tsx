@@ -4,6 +4,8 @@ import CardHeader from "../../components/CardHeader";
 import { useSettings } from "../../hooks/useSettings";
 import { BedControlMode } from "../../types/Settings";
 
+const toNumber = (v: string) => v === '' ? undefined : Number(v);
+
 export default observer(function BedSettings() {
   const settings = useSettings();
   const isStepperMode = settings.bed.control_mode === BedControlMode.Stepper;
@@ -41,7 +43,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.screw_lead_um ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { screw_lead_um: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { screw_lead_um: toNumber(e.target.value) } })}
                   />
                   <Form.Text className="text-muted">Lead of the bed screw in micrometers</Form.Text>
                 </Form.Group>
@@ -51,7 +53,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.microstep_multiplier ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { microstep_multiplier: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { microstep_multiplier: toNumber(e.target.value) } })}
                   />
                 </Form.Group>
 
@@ -60,7 +62,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.steps_per_revolution ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { steps_per_revolution: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { steps_per_revolution: toNumber(e.target.value) } })}
                   />
                 </Form.Group>
 
@@ -69,7 +71,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.moving_speed ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { moving_speed: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { moving_speed: toNumber(e.target.value) } })}
                   />
                 </Form.Group>
 
@@ -78,7 +80,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.homing_speed ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { homing_speed: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { homing_speed: toNumber(e.target.value) } })}
                   />
                 </Form.Group>
 
@@ -87,7 +89,7 @@ export default observer(function BedSettings() {
                   <Form.Control
                     type="number"
                     value={settings.bed.backoff_distance_um ?? ''}
-                    onChange={e => settings.updateSettings({ bed: { backoff_distance_um: Number(e.target.value) } })}
+                    onChange={e => settings.updateSettings({ bed: { backoff_distance_um: toNumber(e.target.value) } })}
                   />
                   <Form.Text className="text-muted">Distance to move back when a limit switch is triggered</Form.Text>
                 </Form.Group>

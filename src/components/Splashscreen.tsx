@@ -2,31 +2,38 @@ import { useStore } from '../stores/RootStore';
 import { observer } from 'mobx-react-lite';
 import { UartStatus } from '../types/Stores';
 import { useSerialService } from '../contexts/SerialServiceContext';
-import { Button } from 'react-bootstrap';
+import { Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
 import splashscreen from '../../assets/splashscreen.svg';
+
+const CONNECT_MAX_RETRIES = 5;
+const CONNECT_RETRY_DELAY_MS = 1000;
 
 const Splashscreen = observer(() => {
   const { serialStore, settingsStore } = useStore();
   const serialService = useSerialService();
   const [showSkip, setShowSkip] = useState(globalThis.isDev ? true : false);
   const hasError = serialStore.connectionState === UartStatus.Error;
+  const isConnecting = serialStore.connectionState === UartStatus.Connecting;
   const isConnected = serialStore.connectionState === UartStatus.Connected;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSkip(true);
-    }, 10000); // Show skip button after 10 seconds
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleConnect = async () => {
     try {
-      await serialService.connect();
-    } catch (error) {
+      await serialService.connect({
+        maxRetries: CONNECT_MAX_RETRIES,
+        retryDelayMs: CONNECT_RETRY_DELAY_MS,
+      });
+    } catch {
       // Error handling is already done in SerialService
     }
   };
@@ -61,7 +68,29 @@ const Splashscreen = observer(() => {
         }}
       />
 
-      {hasError ? (
+      {isConnecting ? (
+        <div
+          style={{
+            color: 'white',
+            textAlign: 'center',
+            padding: '1rem'
+          }}
+        >
+          <Spinner animation="border" variant="light" className="mb-3" />
+          <p>Connecting...</p>
+          {showSkip && (
+            <div>
+              <Button
+                variant="link"
+                onClick={handleSkip}
+                className="text-white"
+              >
+                Skip Loading
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : hasError ? (
         <div
           style={{
             color: 'white',

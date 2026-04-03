@@ -46,9 +46,10 @@ const Controls = observer(() => {
         [relay]: newValue
       });
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       toastStore.show(
         'Action Failed',
-        `Failed to toggle ${relay}: ${error.message}`,
+        `Failed to toggle ${relay}: ${message}`,
         'danger'
       );
     }

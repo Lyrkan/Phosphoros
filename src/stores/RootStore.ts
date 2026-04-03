@@ -19,7 +19,7 @@ export class RootStore {
   readonly settingsStore: SettingsStore;
   readonly toastStore: ToastStore;
   readonly coolingHistoryStore: CoolingHistoryStore;
-  public debugStore: DebugStore;
+  readonly debugStore: DebugStore;
 
   constructor() {
     this.laserStore = new LaserStore();

@@ -83,22 +83,6 @@ const Status = observer(() => {
     return  <Badge bg="success">Ok</Badge>;
   };
 
-  const getUartStatusBadge = (state: UartStatus): ReactElement|null => {
-    return getStatusBadge(
-      state,
-      [UartStatus.Unknown],
-      [UartStatus.Connected]
-    );
-  };
-
-  const getSerialConnectionBadge = (state: UartStatus): ReactElement|null => {
-    return getStatusBadge(
-      state,
-      [UartStatus.Unknown],
-      [UartStatus.Connected]
-    );
-  };
-
   const isWithinBounds = (value: number | undefined, min: number | undefined, max: number | undefined) => {
     if (value === undefined) return false;
     if (min === undefined || value < min) return false;
@@ -163,6 +147,7 @@ const Status = observer(() => {
       uartStatus: UartStatus,
       connectionState: UartStatus
     ): PanelStatus => {
+      if (connectionState === UartStatus.Connecting) return PanelStatus.Warning;
       if (flameSensorStatus === FlameSensorStatus.Unknown ||
           uartStatus === UartStatus.Unknown ||
           connectionState === UartStatus.Unknown) return PanelStatus.Warning;
@@ -239,6 +224,9 @@ const Status = observer(() => {
     uartStatus: UartStatus,
     connectionState: UartStatus
   ): ReactElement|null => {
+    if (connectionState === UartStatus.Connecting) {
+      return <Badge bg="info">Connecting</Badge>;
+    }
     if (uartStatus === UartStatus.Connected && connectionState === UartStatus.Connected) {
       return <Badge bg="success">OK</Badge>;
     }
@@ -252,6 +240,10 @@ const Status = observer(() => {
     uartStatus: UartStatus,
     connectionState: UartStatus
   ): string => {
+    if (connectionState === UartStatus.Connecting) {
+      return "Connecting...";
+    }
+
     if (uartStatus === UartStatus.Connected && connectionState === UartStatus.Connected) {
       return "All systems connected";
     }
@@ -260,10 +252,10 @@ const Status = observer(() => {
       if (uartStatus !== UartStatus.Connected) {
         return "No connections established";
       }
-      return "K40 Control Panel unreacheable";
+      return "K40 Control Panel unreachable";
     }
 
-    return "FluidNC unreacheable";
+    return "FluidNC unreachable";
   };
 
   return (

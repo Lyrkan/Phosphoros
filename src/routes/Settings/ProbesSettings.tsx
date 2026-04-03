@@ -3,6 +3,8 @@ import { observer } from "mobx-react-lite";
 import CardHeader from "../../components/CardHeader";
 import { useSettings } from "../../hooks/useSettings";
 
+const toNumber = (v: string) => v === '' ? undefined : Number(v);
+
 export default observer(function ProbesSettings() {
   const settings = useSettings();
 
@@ -26,7 +28,7 @@ export default observer(function ProbesSettings() {
                         cooling: {
                           flow: {
                             ...settings.probes.cooling?.flow,
-                            min: Number(e.target.value)
+                            min: toNumber(e.target.value)
                           }
                         }
                       }
@@ -46,7 +48,7 @@ export default observer(function ProbesSettings() {
                         cooling: {
                           flow: {
                             ...settings.probes.cooling?.flow,
-                            max: Number(e.target.value)
+                            max: toNumber(e.target.value)
                           }
                         }
                       }
@@ -70,7 +72,7 @@ export default observer(function ProbesSettings() {
                         cooling: {
                           temp: {
                             ...settings.probes.cooling?.temp,
-                            min: Number(e.target.value)
+                            min: toNumber(e.target.value)
                           }
                         }
                       }
@@ -90,7 +92,7 @@ export default observer(function ProbesSettings() {
                         cooling: {
                           temp: {
                             ...settings.probes.cooling?.temp,
-                            max: Number(e.target.value)
+                            max: toNumber(e.target.value)
                           }
                         }
                       }

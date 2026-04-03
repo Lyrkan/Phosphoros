@@ -25,7 +25,7 @@ export class DebugStore {
   private isMessageOfType(text: string, type: IncomingMessageType): boolean {
     if (!text.startsWith(MESSAGE_RX_PREFIX)) return false;
     try {
-      const jsonStr = text.substring(3).trim();
+      const jsonStr = text.substring(MESSAGE_RX_PREFIX.length).trim();
       const parsed = JSON.parse(jsonStr);
       return typeof parsed === 'object' && parsed.t === type;
     } catch {

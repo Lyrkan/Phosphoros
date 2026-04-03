@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { FlameSensorStatus, UartStatus } from "../types/Stores";
 
 export class SystemStore {
@@ -17,11 +17,11 @@ export class SystemStore {
     return this._uartStatus;
   }
 
-  setFlameSensorStatus = action((status: FlameSensorStatus) => {
+  setFlameSensorStatus = (status: FlameSensorStatus) => {
     this._flameSensorStatus = status;
-  });
+  };
 
-  setUartStatus = action((status: UartStatus) => {
+  setUartStatus = (status: UartStatus) => {
     this._uartStatus = status;
-  });
+  };
 }

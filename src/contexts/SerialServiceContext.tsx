@@ -6,5 +6,9 @@ const SerialServiceContext = createContext<ISerialService | null>(null);
 export const SerialServiceContextProvider = SerialServiceContext.Provider;
 
 export function useSerialService(): ISerialService {
-  return useContext(SerialServiceContext);
+  const context = useContext(SerialServiceContext);
+  if (!context) {
+    throw new Error('useSerialService must be used within a SerialServiceProvider');
+  }
+  return context;
 }
